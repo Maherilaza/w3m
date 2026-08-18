@@ -31,6 +31,8 @@ typedef struct {
     wc_uint32 code;
 } wc_wchar_t;
 
+typedef struct wc_status_s wc_status;
+
 typedef struct {
     wc_uint16 code;
     wc_uint16 code2;
@@ -46,7 +48,7 @@ typedef struct {
     wc_ccs       ccs;
     size_t       n;
     wc_map      *map;
-    wc_wchar_t (*conv)();
+    wc_wchar_t (*conv)(wc_ccs ccs, wc_uint16 code);
 } wc_table;
 
 typedef struct {
@@ -61,9 +63,9 @@ typedef struct {
     char     *desc;
     wc_gset  *gset;
     wc_uchar *gset_ext;
-    Str     (*conv_from)();
-    void    (*push_to)();
-    Str     (*char_conv)();
+    Str     (*conv_from)(Str is, wc_ces ces);
+    void    (*push_to)(Str os, wc_wchar_t cc, wc_status *st);
+    Str     (*char_conv)(wc_uchar c, wc_status *st);
 } wc_ces_info;
 
 typedef struct {
@@ -94,7 +96,7 @@ typedef struct {
     wc_bool east_asian_width;	/* East Asian Ambiguous characters are wide */
 } wc_option;
 
-typedef struct {
+struct wc_status_s {
     wc_ces_info *ces_info;
     wc_uint8     gr;
     wc_uint8     gl;
@@ -113,6 +115,6 @@ typedef struct {
     wc_uint32    base;
     int          shift;
 #endif
-} wc_status;
+};
 
 #endif

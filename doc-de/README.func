@@ -27,6 +27,8 @@ DOWNLOAD_LIST	Die Übersicht heruntergeladener Dateien zeigen
 EDIT		Bearbeite lokales Quelldokument
 EDIT_SCREEN	Bearbeite eine Kopie des verarbeiteten Dokuments
 END		Gehe zur letzten Zeile
+END_BIGWORD	Gehe zum Ende des Großwortes
+END_WORD	Gehe zum Ende des Wortes
 EXEC_SHELL	Führe Shell-Befehl aus und zeige Ausgabe an
 EXIT		Sofort beenden
 EXTERN		Verwende externen Browser zur Anzeige
@@ -74,6 +76,7 @@ MOVE_UP1	Cursor aufwärts; am Rand gleitend bewegen
 MSGS		Zeige Fehlermeldungen an
 NEW_TAB 	Öffne neuen Reiter (mit aktuellem Dokument)
 NEXT		Schalte zum nächsten Puffer
+NEXT_BIGWORD	Gehe zum nächsten Großwort
 NEXT_DOWN	Gehe abwärts zum nächsten Hyperlink
 NEXT_HALF_PAGE	Scrolle eine halbe Seite abwärts
 NEXT_LEFT	Gehe zum nächsten Hyperlink links
@@ -96,6 +99,7 @@ PEEK_LINK	Zeige Zieladresse
 PIPE_BUF	Leite aktuellen Pufferinhalt einem Shell-Befehl zu und zeige Ausgabe an
 PIPE_SHELL	Führe Shell-Befehl aus und zeige Ausgabe an
 PREV		Schalte zum vorherigen Puffer
+PREV_BIGWORD	Gehe zum vorherigen Großwort
 PREV_HALF_PAGE	Scrolle eine halbe Seite aufwärts
 PREV_LINK	Gehe zum vorangegangen Hyperlink
 PREV_MARK	Gehe zur vorherigen Markierung

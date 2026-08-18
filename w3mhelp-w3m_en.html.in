@@ -16,18 +16,24 @@ w3m</A>
 
 <H2>Page/Cursor motion</H2>
 <table cellpadding=0>
-<TR><TD WIDTH=100>SPC,C-v<TD>Forward page
-<TR><TD>b,ESC v<TD>Backward page
-<TR><TD>l,C-f<TD>Cursor right
-<TR><TD>h,C-b<TD>Cursor left
+<TR><TD WIDTH=100>SPC,C-v,C-f<TD>Forward page
+<TR><TD>-,ESC v,C-b<TD>Backward page
+<TR><TD>C-d<TD>Forward half page
+<TR><TD>C-u<TD>Backward half page
+<TR><TD>l<TD>Cursor right
+<TR><TD>h<TD>Cursor left
 <TR><TD>j,C-n<TD>Cursor down
 <TR><TD>k,C-p<TD>Cursor up
 <TR><TD>J<TD>Roll up one line
 <TR><TD>K<TD>Roll down one line
-<TR><TD>^,C-a<TD>Go to the beginning of line
+<TR><TD>0,^,C-a<TD>Go to the beginning of line
 <TR><TD>$,C-e<TD>Go to the end of line
 <TR><TD>w<TD>Go to next word
-<TR><TD>W<TD>Go to previous word
+<TR><TD>b<TD>Go to previous word
+<TR><TD>e<TD>Go to end of word
+<TR><TD>W<TD>Go to next big word
+<TR><TD>B<TD>Go to previous big word
+<TR><TD>E<TD>Go to end of big word
 <TR><TD>&gt;<TD>Shift screen right
 <TR><TD>&lt;<TD>Shift screen left
 <TR><TD>.<TD>Shift screen one column right 
@@ -35,10 +41,13 @@ w3m</A>
 <TR><TD>g,M-&lt;<TD>Go to the first line
 <TR><TD>G,M-&gt;<TD>Go to the last line
 <TR><TD>ESC g<TD>Go to specified line
+<TR><TD>H<TD>Move cursor to the top line on the screen
+<TR><TD>M<TD>Move cursor to the middle line on the screen
+<TR><TD>L<TD>Move cursor to the bottom line on the screen
 <TR><TD>Z<TD>Move to the center line
 <TR><TD>z<TD>Move to the center column
 <TR><TD>TAB<TD>Move to next hyperlink
-<TR><TD>C-u,ESC TAB<TD>Move to previous hyperlink
+<TR><TD>ESC TAB<TD>Move to previous hyperlink
 <TR><TD>[<TD>Go to the first link
 <TR><TD>]<TD>Go to the last link
 </table>
@@ -58,10 +67,8 @@ w3m</A>
 <TR><TD>C-g<TD>Show current line number
 <TR><TD>C-h<TD>View browser history
 <TR><TD>F<TD>Render frames
-<TR><TD>M<TD>Browse current document using external browser
-(prefix 2, 3, ..., or 9 to invoke alternate configured browsers, e.g. 3 M)
 <TR><TD>ESC M<TD>Browse link using external browser
-(prefixed as above, e.g. 3ESC M)
+(prefix 2, 3, ..., or 9 to invoke alternate configured browsers, e.g. 3ESC M)
 </table>
 
 <H2>File/Stream operation</H2>
@@ -74,10 +81,8 @@ w3m</A>
 
 <H2>Buffer operation</H2>
 <table cellpadding=0>
-<TR><TD WIDTH=100>B<TD>Back to the previous buffer
-<TR><TD>v<TD>View HTML source
+<TR><TD WIDTH=100>v<TD>View HTML source
 <TR><TD>s<TD>Select buffer
-<TR><TD>E<TD>Edit buffer source
 <TR><TD>C-l<TD>Redraw screen
 <TR><TD>R<TD>Reload buffer
 <TR><TD>S<TD>Save buffer
@@ -125,7 +130,6 @@ w3m</A>
 <H2>Miscellany</H2>
 <table cellpadding=0>
 <TR><TD WIDTH=100>!<TD>Execute shell command
-<TR><TD>H<TD>Help (load this file)
 <TR><TD>o<TD>Set option
 <TR><TD>C-k<TD>Show cookie jar
 <TR><TD>C-c<TD>Stop

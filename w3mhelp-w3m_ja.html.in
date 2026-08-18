@@ -18,18 +18,24 @@
 
 <H2>ページ/カーソル移動</H2>
 <TABLE CELLPADDING=0>
- <TR> <TD WIDTH=100>SPC,C-v</TD> <TD>次ページ</TD></TR>
- <TR> <TD>b,ESC v</TD> <TD>前ページ</TD></TR>
- <TR> <TD>l,C-f</TD> <TD>カーソルを右へ移動</TD></TR>
- <TR> <TD>h,C-b</TD> <TD>カーソルを左へ移動</TD></TR>
+ <TR> <TD WIDTH=100>SPC,C-v,C-f</TD> <TD>次ページ</TD></TR>
+ <TR> <TD>-,ESC v,C-b</TD> <TD>前ページ</TD></TR>
+ <TR> <TD>C-d</TD> <TD>半ページ進む</TD></TR>
+ <TR> <TD>C-u</TD> <TD>半ページ戻る</TD></TR>
+ <TR> <TD>l</TD> <TD>カーソルを右へ移動</TD></TR>
+ <TR> <TD>h</TD> <TD>カーソルを左へ移動</TD></TR>
  <TR> <TD>j,C-n</TD> <TD>カーソルを下へ移動</TD></TR>
  <TR> <TD>k,C-p</TD> <TD>カーソルを上へ移動</TD></TR>
  <TR> <TD>J</TD><TD>一行上にスクロール(進む)</TD></TR>
  <TR> <TD>K</TD><TD>一行下にスクロール(戻る)</TD></TR>
- <TR> <TD>^,C-a</TD><TD>行頭に移動</TD></TR>
+ <TR> <TD>0,^,C-a</TD><TD>行頭に移動</TD></TR>
  <TR> <TD>$,C-e</TD><TD>行末に移動</TD></TR>
  <TR> <TD>w</TD><TD>次の単語に移動</TD></TR>
- <TR> <TD>W</TD><TD>前の単語に移動</TD></TR>
+ <TR> <TD>b</TD><TD>前の単語に移動</TD></TR>
+ <TR> <TD>e</TD><TD>単語の末尾に移動</TD></TR>
+ <TR> <TD>W</TD><TD>次の大きな単語に移動</TD></TR>
+ <TR> <TD>B</TD><TD>前の大きな単語に移動</TD></TR>
+ <TR> <TD>E</TD><TD>大きな単語の末尾に移動</TD></TR>
  <TR> <TD>&gt;</TD> <TD>右に一画面分シフト</TD></TR>
  <TR> <TD>&lt;</TD> <TD>左に一画面分シフト</TD></TR>
  <TR> <TD>.</TD> <TD>右に一文字分シフト</TD></TR>
@@ -37,10 +43,13 @@
  <TR> <TD>g,M-&lt;</TD> <TD>ページの先頭行に移動</TD></TR>
  <TR> <TD>G,M-&gt;</TD> <TD>ページの最終行に移動</TD></TR>
  <TR> <TD>ESC g</TD> <TD>指定行に移動</TD></TR>
+ <TR> <TD>H</TD> <TD>カーソルを画面上端の行に移動</TD></TR>
+ <TR> <TD>M</TD> <TD>カーソルを画面中央の行に移動</TD></TR>
+ <TR> <TD>L</TD> <TD>カーソルを画面下端の行に移動</TD></TR>
  <TR> <TD>Z</TD> <TD>カーソルのある位置を行の中央に移動</TD></TR>
  <TR> <TD>z</TD> <TD>カーソルのある行を画面の中央に移動</TD></TR>
  <TR> <TD>TAB</TD> <TD>次のハイパーリンクに移動</TD></TR>
- <TR> <TD>C-u, ESC TAB</TD> <TD>前のハイパーリンクに移動</TD></TR>
+ <TR> <TD>ESC TAB</TD> <TD>前のハイパーリンクに移動</TD></TR>
  <TR> <TD>[</TD> <TD>最初のハイパーリンクに移動</TD></TR>
  <TR> <TD>]</TD> <TD>最後のハイパーリンクに移動</TD></TR>
 </TABLE>
@@ -61,7 +70,6 @@
  <TR> <TD>C-g</TD> <TD>ページ中での現在位置を表示</TD></TR>
  <TR> <TD>C-h</TD> <TD>URL履歴を表示</TD></TR>
  <TR> <TD>F</TD> <TD>フレームを表示する</TD></TR>
- <TR> <TD>M</TD> <TD>現ページを外部ブラウザで表示する(2M, 3M, ..., 9M で2番目，3番目，9番目のブラウザを呼びだす)</TD></TR>
  <TR> <TD>ESC M</TD> <TD>リンク先を外部ブラウザで表示する(2ESC M, 3ESC M, ..., 9ESC M で2番目，3番目，9番目のブラウザを呼びだす)</TD></TR>
 </TABLE>
 
@@ -75,10 +83,8 @@
 
 <H2>バッファ操作</H2>
 <TABLE CELLPADDING=0>
- <TR> <TD WIDTH=100>B</TD> <TD>前のバッファに移動</TD></TR>
- <TR> <TD>v</TD> <TD>HTMLソースを表示</TD></TR>
+ <TR> <TD WIDTH=100>v</TD> <TD>HTMLソースを表示</TD></TR>
  <TR> <TD>s</TD> <TD>バッファを選択</TD></TR>
- <TR> <TD>E</TD> <TD>バッファのソースを編集</TD></TR>
  <TR> <TD>C-l</TD> <TD>画面の再描画</TD></TR>
  <TR> <TD>R</TD> <TD>バッファを再読み込み</TD></TR>
  <TR> <TD>S</TD> <TD>バッファを保存</TD></TR>
@@ -127,7 +133,6 @@
 <H2>その他</H2>
 <TABLE CELLPADDING=0>
  <TR> <TD WIDTH=100>!</TD> <TD>シェルの実行</TD></TR>
- <TR> <TD>H</TD> <TD>ヘルプ(このファイルを表示)</TD></TR>
  <TR> <TD>o</TD> <TD>オプション設定</TD></TR>
  <TR> <TD>C-k</TD> <TD>クッキー一覧を表示</TD></TR>
  <TR> <TD>C-c</TD> <TD>文書の読み込みを中断</TD></TR>

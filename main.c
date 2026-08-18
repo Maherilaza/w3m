@@ -1790,7 +1790,7 @@ clear_mark(Line *l)
 static int
 srchcore(char *volatile str, int (*func) (Buffer *, char *))
 {
-    MySignalHandler(*prevtrap) ();
+    MySignalHandler(*prevtrap) (SIGNAL_ARG);
     volatile int i, result = SR_NOTFOUND;
 
     if (str != NULL && str != SearchString)
@@ -2195,7 +2195,7 @@ DEFUN(pipesh, PIPE_SHELL, "Execute shell command and display output")
 DEFUN(readsh, READ_SHELL, "Execute shell command and display output")
 {
     Buffer *buf;
-    MySignalHandler(*prevtrap) ();
+    MySignalHandler(*prevtrap) (SIGNAL_ARG);
     char *cmd;
 
     CurrentKeyData = NULL;	/* not allowed in w3m-control: */
@@ -2555,6 +2555,237 @@ DEFUN(movRW, NEXT_WORD, "Move to the next word")
   end:
     arrangeCursor(Currentbuf);
     displayBuffer(Currentbuf, B_NORMAL);
+}
+
+#if defined(USE_M17N) && defined(USE_UNICODE)
+static int
+is_spacechar(wc_uint32 c)
+{
+    return c == 0x20 || (c >= 0x09 && c <= 0x0d) ||
+	c == 0xa0 || c == 0x3000;
+}
+
+static int
+char_class(wc_uint32 c)
+{
+    if (is_spacechar(c))
+	return 0;
+    if (is_wordchar(c))
+	return 1;
+    return 2;
+}
+#else
+static int
+is_spacechar(int c)
+{
+    return IS_SPACE(c);
+}
+
+static int
+char_class(int c)
+{
+    if (is_spacechar(c))
+	return 0;
+    if (is_wordchar(c))
+	return 1;
+    return 2;
+}
+#endif
+
+DEFUN(movWB, PREV_BIGWORD, "Move to the previous big word")
+{
+    char *lb;
+    Line *pline, *l;
+    int ppos;
+    int i, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    for (i = 0; i < n; i++) {
+	pline = Currentbuf->currentLine;
+	ppos = Currentbuf->pos;
+
+	if (prev_nonnull_line(Currentbuf->currentLine) < 0)
+	    goto end;
+
+	while (1) {
+	    l = Currentbuf->currentLine;
+	    lb = l->lineBuf;
+	    while (Currentbuf->pos > 0) {
+		int tmp = Currentbuf->pos;
+		prevChar(tmp, l);
+		if (!is_spacechar(getChar(&lb[tmp])))
+		    break;
+		Currentbuf->pos = tmp;
+	    }
+	    if (Currentbuf->pos > 0)
+		break;
+	    if (prev_nonnull_line(Currentbuf->currentLine->prev) < 0) {
+		Currentbuf->currentLine = pline;
+		Currentbuf->pos = ppos;
+		goto end;
+	    }
+	    Currentbuf->pos = Currentbuf->currentLine->len;
+	}
+
+	l = Currentbuf->currentLine;
+	lb = l->lineBuf;
+	while (Currentbuf->pos > 0) {
+	    int tmp = Currentbuf->pos;
+	    prevChar(tmp, l);
+	    if (is_spacechar(getChar(&lb[tmp])))
+		break;
+	    Currentbuf->pos = tmp;
+	}
+    }
+  end:
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(movWE, NEXT_BIGWORD, "Move to the next big word")
+{
+    char *lb;
+    Line *pline, *l;
+    int ppos;
+    int i, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    for (i = 0; i < n; i++) {
+	pline = Currentbuf->currentLine;
+	ppos = Currentbuf->pos;
+
+	if (next_nonnull_line(Currentbuf->currentLine) < 0)
+	    goto end;
+
+	l = Currentbuf->currentLine;
+	lb = l->lineBuf;
+	while (Currentbuf->pos < l->len &&
+	       !is_spacechar(getChar(&lb[Currentbuf->pos])))
+	    nextChar(Currentbuf->pos, l);
+
+	while (1) {
+	    while (Currentbuf->pos < l->len &&
+		   is_spacechar(getChar(&lb[Currentbuf->pos])))
+		nextChar(Currentbuf->pos, l);
+	    if (Currentbuf->pos < l->len)
+		break;
+	    if (next_nonnull_line(Currentbuf->currentLine->next) < 0) {
+		Currentbuf->currentLine = pline;
+		Currentbuf->pos = ppos;
+		goto end;
+	    }
+	    Currentbuf->pos = 0;
+	    l = Currentbuf->currentLine;
+	    lb = l->lineBuf;
+	}
+    }
+  end:
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+/* big: 0 = word (alnum or punctuation runs), 1 = big word (non-space runs) */
+static void
+moveWordEnd(int big)
+{
+    char *lb;
+    Line *pline, *l;
+    int ppos;
+    int i, n = searchKeyNum();
+
+    if (Currentbuf->firstLine == NULL)
+	return;
+
+    for (i = 0; i < n; i++) {
+	int c0, cls, tmp;
+
+	pline = Currentbuf->currentLine;
+	ppos = Currentbuf->pos;
+
+	if (next_nonnull_line(Currentbuf->currentLine) < 0)
+	    goto end;
+
+	l = Currentbuf->currentLine;
+	lb = l->lineBuf;
+	c0 = (Currentbuf->pos < l->len)
+	    ? char_class(getChar(&lb[Currentbuf->pos])) : 0;
+	cls = big ? ((c0 == 0) ? 0 : 1) : c0;
+
+	if (cls == 0) {
+	    /* on space: skip spaces to the beginning of the next run */
+	    while (1) {
+		while (Currentbuf->pos < l->len &&
+		       char_class(getChar(&lb[Currentbuf->pos])) == 0)
+		    nextChar(Currentbuf->pos, l);
+		if (Currentbuf->pos < l->len)
+		    break;
+		if (next_nonnull_line(Currentbuf->currentLine->next) < 0) {
+		    Currentbuf->currentLine = pline;
+		    Currentbuf->pos = ppos;
+		    goto end;
+		}
+		Currentbuf->pos = 0;
+		l = Currentbuf->currentLine;
+		lb = l->lineBuf;
+	    }
+	}
+	else {
+	    /* on a run: skip it if already at its end */
+	    tmp = Currentbuf->pos;
+	    nextChar(tmp, l);
+	    if (!(tmp < l->len &&
+		  (big ? (char_class(getChar(&lb[tmp])) != 0)
+		       : (char_class(getChar(&lb[tmp])) == cls)))) {
+		while (Currentbuf->pos < l->len &&
+		       (big ? (char_class(getChar(&lb[Currentbuf->pos])) != 0)
+			    : (char_class(getChar(&lb[Currentbuf->pos])) == cls)))
+		    nextChar(Currentbuf->pos, l);
+		while (1) {
+		    while (Currentbuf->pos < l->len &&
+			   char_class(getChar(&lb[Currentbuf->pos])) == 0)
+			nextChar(Currentbuf->pos, l);
+		    if (Currentbuf->pos < l->len)
+			break;
+		    if (next_nonnull_line(Currentbuf->currentLine->next) < 0) {
+			Currentbuf->currentLine = pline;
+			Currentbuf->pos = ppos;
+			goto end;
+		    }
+		    Currentbuf->pos = 0;
+		    l = Currentbuf->currentLine;
+		    lb = l->lineBuf;
+		}
+	    }
+	}
+
+	/* advance to the last character of the run */
+	while (1) {
+	    tmp = Currentbuf->pos;
+	    nextChar(tmp, l);
+	    if (!(tmp < l->len &&
+		  (big ? (char_class(getChar(&lb[tmp])) != 0)
+		       : (char_class(getChar(&lb[tmp])) == cls))))
+		break;
+	    Currentbuf->pos = tmp;
+	}
+    }
+  end:
+    arrangeCursor(Currentbuf);
+    displayBuffer(Currentbuf, B_NORMAL);
+}
+
+DEFUN(movEW, END_WORD, "Move to the end of the word")
+{
+    moveWordEnd(0);
+}
+
+DEFUN(movEE, END_BIGWORD, "Move to the end of the big word")
+{
+    moveWordEnd(1);
 }
 
 static void

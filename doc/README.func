@@ -27,6 +27,8 @@ DOWNLOAD_LIST	Display downloads panel
 EDIT		Edit local source
 EDIT_SCREEN	Edit rendered copy of document
 END		Go to the last line
+END_BIGWORD	Move to the end of the big word
+END_WORD	Move to the end of the word
 EXEC_SHELL	Execute shell command and display output
 EXIT		Quit without confirmation
 EXTERN		Display using an external browser
@@ -74,6 +76,7 @@ MOVE_UP1	Cursor up. With edge touched, slide
 MSGS		Display error messages
 NEW_TAB 	Open a new tab (with current document)
 NEXT		Switch to the next buffer
+NEXT_BIGWORD	Move to the next big word
 NEXT_DOWN	Move downward to the next hyperlink
 NEXT_HALF_PAGE	Scroll down half a page
 NEXT_LEFT	Move left to the next hyperlink
@@ -96,6 +99,7 @@ PEEK_LINK	Show target address
 PIPE_BUF	Pipe current buffer through a shell command and display output
 PIPE_SHELL	Execute shell command and display output
 PREV		Switch to the previous buffer
+PREV_BIGWORD	Move to the previous big word
 PREV_HALF_PAGE	Scroll up half a page
 PREV_LINK	Move to the previous hyperlink
 PREV_MARK	Go to the previous mark

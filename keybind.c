@@ -4,14 +4,14 @@
 unsigned char GlobalKeymap[128] = {
     /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g      */
 #ifdef __EMX__
-    pcmap, linbeg, movL, nulcmd, nulcmd, linend, movR, curlno,
+    pcmap, linbeg, pgBack, nulcmd, hpgFore, linend, pgFore, curlno,
 #else
-    _mark, linbeg, movL, nulcmd, nulcmd, linend, movR, curlno,
+    _mark, linbeg, pgBack, nulcmd, hpgFore, linend, pgFore, curlno,
 #endif
     /*  C-h     C-i     C-j     C-k     C-l     C-m     C-n     C-o      */
     ldHist, nextA, followA, cooLst, rdrwSc, followA, movD, nulcmd,
     /*  C-p     C-q     C-r     C-s     C-t     C-u     C-v     C-w      */
-    movU, closeT, isrchbak, isrchfor, tabA, prevA, pgFore, wrapToggle,
+    movU, closeT, isrchbak, isrchfor, tabA, hpgBack, pgFore, wrapToggle,
     /*  C-x     C-y     C-z     C-[     C-\     C-]     C-^     C-_      */
     nulcmd, nulcmd, susp, escmap, nulcmd, nulcmd, nulcmd, goHome,
     /*  SPC     !       "       #       $       %       &       '        */
@@ -19,19 +19,19 @@ unsigned char GlobalKeymap[128] = {
     /*  (       )       *       +       ,       -       .       /        */
     undoPos, redoPos, nulcmd, pgFore, col1L, pgBack, col1R, srchfor,
     /*  0       1       2       3       4       5       6       7        */
-    nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd,
+    linbeg, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd, nulcmd,
     /*  8       9       :       ;       <       =       >       ?        */
     nulcmd, nulcmd, chkURL, chkWORD, shiftl, pginfo, shiftr, srchbak,
     /*  @       A       B       C       D       E       F       G        */
-    readsh, nulcmd, backBf, nulcmd, ldDL, editBf, rFrame, goLineL,
+    readsh, nulcmd, movWB, nulcmd, ldDL, movEE, rFrame, goLineL,
     /*  H       I       J       K       L       M       N       O        */
-    ldhelp, followI, lup1, ldown1, linkLst, extbrz, srchprv, nulcmd,
+    cursorTop, followI, lup1, ldown1, cursorBottom, cursorMiddle, srchprv, nulcmd,
     /*  P       Q       R       S       T       U       V       W        */
-    nulcmd, quitfm, reload, svBuf, newT, goURL, ldfile, movLW,
+    nulcmd, quitfm, reload, svBuf, newT, goURL, ldfile, movWE,
     /*  X       Y       Z       [       \       ]       ^       _        */
     nulcmd, nulcmd, ctrCsrH, topA, nulcmd, lastA, linbeg, nulcmd,
     /*  `       a       b       c       d       e       f       g        */
-    nulcmd, svA, pgBack, curURL, nulcmd, nulcmd, nulcmd, goLineF,
+    nulcmd, svA, movLW, curURL, nulcmd, movEW, nulcmd, goLineF,
     /*  h       i       j       k       l       m       n       o        */
     movL, peekIMG, movD, movU, movR, msToggle, srchnxt, ldOpt,
     /*  p       q       r       s       t       u       v       w        */

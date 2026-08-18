@@ -6,7 +6,7 @@ top_srcdir=@top_srcdir@
 VPATH=$(srcdir):.
 LIBRARY = libwc.a
 CC=@CC@
-CFLAGS = $(OPTS) -I.. -I$(top_srcdir) -I$(srcdir) @CFLAGS@ @CPPFLAGS@ @WCCFLAGS@ @DEFS@
+CFLAGS = -std=gnu99 $(OPTS) -I.. -I$(top_srcdir) -I$(srcdir) @CFLAGS@ @CPPFLAGS@ @WCCFLAGS@ @DEFS@
 AR=ar
 RANLIB=@RANLIB@
 RM=rm
@@ -91,6 +91,8 @@ dist:
 $(LIBRARY): $(OBJS)
 	$(AR) rv $(LIBRARY) $(OBJS)
 	$(RANLIB) $(LIBRARY)
+
+$(OBJS): ../config.h
 
 test: $(LIBRARY) test.o ../Str.o ../myctype.o
 	$(CC) -o wctest test.o ../Str.o ../myctype.o $(LIBRARY) ../gc/gc.a

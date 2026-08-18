@@ -27,6 +27,8 @@ DOWNLOAD_LIST	ダウンロード状況の一覧を表示します
 EDIT		ソースファイルをエディタで編集します
 EDIT_SCREEN	バッファの表示内容をエディタで編集します
 END		文書のいちばん下の行に移動します
+END_BIGWORD	次の大きな単語の末尾に移動します
+END_WORD	単語の末尾に移動します
 EXEC_SHELL	シェルコマンドを実行します
 EXIT		確認せずにw3mを終了します
 EXTERN		外部ブラウザを使って表示します
@@ -74,6 +76,7 @@ MOVE_UP1       カーソルを上に移動します(改ページ時には１行�
 MSGS        エラーメッセージの一覧の表示
 NEW_TAB		新しいタブを開きます
 NEXT		次のバッファを表示します
+NEXT_BIGWORD	次の大きな単語に移動します
 NEXT_DOWN      カーソルの下側にあるリンクに移動します
 NEXT_HALF_PAGE	半ページ下にスクロールします
 NEXT_LEFT      カーソルの左側にあるリンクに移動します
@@ -96,6 +99,7 @@ PEEK_LINK      リンクが指す先のURLを表示します
 PIPE_BUF       バッファの内容をパイプに渡します
 PIPE_SHELL	コマンドを実行し，結果を読みこみながら表示します
 PREV		前のバッファを表示します
+PREV_BIGWORD	前の大きな単語に移動します
 PREV_HALF_PAGE	半ページ上にスクロールします
 PREV_LINK	前のリンクに移動します
 PREV_MARK	一つ前のマークに移動します

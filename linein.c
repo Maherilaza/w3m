@@ -32,7 +32,7 @@ static char **CFileBuf = NULL;
 static int NCFileBuf;
 static int NCFileOffset;
 
-static void insertself(char c),
+static void insertself(void),
 _mvR(void), _mvL(void), _mvRw(void), _mvLw(void), delC(void), insC(void),
 _mvB(void), _mvE(void), _enter(void), _quo(void), _bs(void), _bsw(void),
 killn(void), killb(void), _inbrk(void), _esc(void), _editor(void),
@@ -43,14 +43,14 @@ static int getcntrl(void);
 #endif
 
 static int terminated(unsigned char c);
-#define iself ((void(*)())insertself)
+#define iself insertself
 
 static void next_compl(int next);
 static void next_dcompl(int next);
 static Str doComplete(Str ifn, int *status, int next);
 
 /* *INDENT-OFF* */
-void (*InputKeymap[32]) () = {
+void (*InputKeymap[32]) (void) = {
 /*  C-@     C-a     C-b     C-c     C-d     C-e     C-f     C-g     */
     _compl, _mvB,   _mvL,   _inbrk, delC,   _mvE,   _mvR,   _inbrk,
 /*  C-h     C-i     C-j     C-k     C-l     C-m     C-n     C-o     */
@@ -71,6 +71,7 @@ static int i_cont, i_broken, i_quote;
 static int cm_mode, cm_next, cm_clear, cm_disp_next, cm_disp_clear;
 static int need_redraw, is_passwd;
 static int move_word;
+static int iself_char;
 
 static Hist *CurrentHist;
 static Str strCurrentBuf;
@@ -207,8 +208,10 @@ inputLineHistSearch(char *prompt, char *def_str, int flag, Hist *hist,
 	}
 	else if (!i_quote && c < 0x20) {	/* Control code */
 	    if (incrfunc == NULL
-		|| (c = incrfunc((int)c, strBuf, strProp)) < 0x20)
-		(*InputKeymap[(int)c]) (c);
+		|| (c = incrfunc((int)c, strBuf, strProp)) < 0x20) {
+		iself_char = c;
+		(*InputKeymap[(int)c]) ();
+	    }
 	    if (incrfunc && c != (unsigned char)-1 && c != CTRL_J)
 		incrfunc(-1, strBuf, strProp);
 	    if (cm_clear)
@@ -580,12 +583,12 @@ _enter(void)
 }
 
 static void
-insertself(char c)
+insertself(void)
 {
     if (CLen >= STR_LEN)
 	return;
     insC();
-    strBuf->ptr[CPos] = c;
+    strBuf->ptr[CPos] = iself_char;
     strProp[CPos] = (is_passwd) ? PC_ASCII : PC_CTRL;
     CPos++;
 }

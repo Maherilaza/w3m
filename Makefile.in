@@ -36,7 +36,7 @@ ETC_DIR = $(sysconfdir)
 CONF_DIR = $(sysconfdir)/$(PACKAGE)
 
 WARNINGS= -Wall -Wnull-dereference
-CFLAGS = $(WARNINGS) -I. -I$(top_srcdir) @CFLAGS@ $(CPPFLAGS) $(DEFS) $(OPTS)
+CFLAGS = -std=gnu99 $(WARNINGS) -I. -I$(top_srcdir) @CFLAGS@ $(CPPFLAGS) $(DEFS) $(OPTS)
 WCCFLAGS = @WCCFLAGS@
 CPPFLAGS = @CPPFLAGS@
 DEFS = @DEFS@ -DAUXBIN_DIR=\"$(AUXBIN_DIR)\" \
@@ -135,7 +135,7 @@ $(ALIB): $(ALIBOBJS)
 	$(AR) rv $(ALIB) $(ALIBOBJS)
 	$(RANLIB) $(ALIB)
 
-$(OBJS) $(LOBJS): fm.h funcname1.h
+$(OBJS) $(LOBJS): fm.h funcname1.h config.h
 
 tagtable.c: tagtable.tab mktable$(EXT) html.h 
 	./mktable$(EXT) 100 $(srcdir)/tagtable.tab > $@
