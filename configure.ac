@@ -70,6 +70,7 @@ AC_W3M_HISTORY
 AC_W3M_ALARM
 
 AC_W3M_COOKIE
+AC_W3M_JS
 AC_W3M_NNTP
 AC_W3M_GOPHER
 
@@ -185,6 +186,7 @@ scripts/w3mman/Makefile scripts/w3mman/w3mman \
 scripts/w3mman/w3mman.1 scripts/w3mman/w3mman.de.1 \
 scripts/w3mman/w3mman2html.cgi \
 libwc/Makefile \
+js/Makefile \
 w3mimg/Makefile w3mimg/fb/Makefile w3mimg/x11/Makefile w3mimg/win/Makefile \
 w3mhelp-w3m_en.html w3mhelp-w3m_ja.html \
 w3mhelp-lynx_en.html w3mhelp-lynx_ja.html])

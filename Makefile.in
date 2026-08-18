@@ -50,6 +50,7 @@ GC_LIBS = @LIBGC@
 EXT_LIBS = -L. -lindep @LIBINTL@ $(GC_LIBS)
 W3M_LIBS = @W3M_LIBS@
 WCTARGET = @WCTARGET@
+JSTARGET = @JSTARGET@
 NLSTARGET = @NLSTARGET@
 
 MAKE_ARGS = PERL='$(PERL)' MKDIR='$(MKDIR)' \
@@ -90,11 +91,11 @@ MODEL=@W3M_TARGET@-@W3M_LANG@
 SRCS=main.c file.c buffer.c display.c etc.c search.c linein.c table.c local.c \
 	form.c map.c frame.c rc.c menu.c mailcap.c image.c \
 	symbol.c entity.c terms.c url.c ftp.c mimehead.c regex.c news.c \
-	func.c cookie.c history.c backend.c util.c $(KEYBIND_SRC)
+	func.c cookie.c history.c backend.c util.c js.c $(KEYBIND_SRC)
 OBJS=main.o file.o buffer.o display.o etc.o search.o linein.o table.o local.o\
 	form.o map.o frame.o rc.o menu.o mailcap.o image.o \
 	symbol.o entity.o terms.o url.o ftp.o mimehead.o regex.o news.o \
-	func.o cookie.o history.o backend.o util.o $(KEYBIND_OBJ)
+	func.o cookie.o history.o backend.o util.o js.o $(KEYBIND_OBJ)
 LSRCS=anchor.c parsetagx.c tagtable.c istream.c
 LOBJS=anchor.o parsetagx.o tagtable.o istream.o
 LLOBJS=version.o
@@ -128,7 +129,7 @@ SUBDIRS = $(SCRIPTSUBDIRS) w3mimg libwc po
 
 all: $(TARGETS) all-scripts $(NLSTARGET)
 
-$(TARGET): $(ALLOBJS) $(ALIB) $(WCTARGET)
+$(TARGET): $(ALLOBJS) $(ALIB) $(WCTARGET) $(JSTARGET)
 	$(CC) $(CFLAGS) -o $(TARGET) $(ALLOBJS) $(LDFLAGS) $(LIBS) $(EXT_LIBS) $(W3M_LIBS)
 
 $(ALIB): $(ALIBOBJS)
@@ -196,6 +197,11 @@ inflate.o: inflate.c
 libwc/libwc.a: libwc
 libwc:
 	(cd libwc && $(MAKE) CC='$(CC0)' OPTS='$(OPTS)')
+
+js/libw3mjs.a: JS_FORCE
+JS_FORCE:
+	(cd js && $(MAKE) CC='$(CC0)')
+.PHONY: JS_FORCE
  
 dummy.o: entity.c
 	$(CC) $(CFLAGS) -DDUMMY -c -o $@ $?
@@ -294,7 +300,7 @@ clean: sweep
 	-$(RM) -f *.o *.a $(TARGETS) mktable$(EXT)
 	-$(RM) -f funcname.tab
 	-$(RM) -f entity.h funcname.c funcname1.h funcname2.h tagtable.c functable.c
-	-for dir in w3mimg libwc; \
+	-for dir in w3mimg libwc js; \
 	do \
 		(cd $$dir && $(MAKE) clean RM="$(RM)"); \
 	done
@@ -304,7 +310,7 @@ clean: sweep
 	done
 
 distclean: clean
-	for subdir in po scripts w3mimg libwc; \
+	for subdir in po scripts w3mimg libwc js; \
 	do \
 		(cd $$subdir && $(MAKE) distclean); \
 	done

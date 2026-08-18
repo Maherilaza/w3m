@@ -102,6 +102,7 @@ extern void peekIMG(void);
 extern void curURL(void);
 extern void vwSrc(void);
 extern void reload(void);
+extern void jsReload(void);
 extern void reshape(void);
 extern void chkURL(void);
 extern void chkURLBuffer(Buffer *buf);
@@ -264,6 +265,16 @@ extern void completeHTMLstream(struct html_feed_environ *,
 extern void loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src,
 			   int internal);
 extern Buffer *loadHTMLString(Str page);
+#ifdef USE_JS
+extern int js_enabled(void);
+extern void js_html_start(Buffer *buf);
+extern void js_html_end(void);
+extern void js_eval_source(Str body);
+extern char *js_take_docwrite(void);
+extern char *js_take_title(void);
+extern char *js_take_redirect(void);
+extern ParsedURL *js_baseURL(void);
+#endif				/* USE_JS */
 #ifdef USE_GOPHER
 #ifdef USE_M17N
 extern Str loadGopherDir(URLFile *uf, ParsedURL *pu, wc_ces * charset);
@@ -283,6 +294,7 @@ extern void saveBuffer(Buffer *buf, FILE * f, int cont);
 extern void saveBufferBody(Buffer *buf, FILE * f, int cont);
 extern Buffer *getshell(char *cmd);
 extern Buffer *getpipe(char *cmd);
+extern Buffer *loadHTMLcmdout(char *cmd, Buffer *defaultbuf);
 extern Buffer *openPagerBuffer(InputStream stream, Buffer *buf);
 extern Buffer *openGeneralPagerBuffer(InputStream stream);
 extern Line *getNextPage(Buffer *buf, int plen);

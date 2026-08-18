@@ -3227,14 +3227,14 @@ feed_table(struct table *tbl, char *line, struct table_mode *mode,
 	if (mode->pre_mode & (TBLM_DEL | TBLM_S))
 	    return -1;
     }
-    if (mode->caption) {
-	Strcat_charp(tbl->caption, line);
-	return -1;
-    }
     if (mode->pre_mode & TBLM_SCRIPT)
 	return -1;
     if (mode->pre_mode & TBLM_STYLE)
 	return -1;
+    if (mode->caption) {
+	Strcat_charp(tbl->caption, line);
+	return -1;
+    }
     if (mode->pre_mode & TBLM_INTXTA) {
 	feed_textarea(line);
 	return -1;

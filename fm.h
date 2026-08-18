@@ -215,7 +215,9 @@ void bzero(void *, int);
 #define LB_N_INFO	3
 #define LB_SOURCE	4	/* vwSrc() */
 #define LB_N_SOURCE	LB_SOURCE
-#define MAX_LB		5
+#define LB_JS		5	/* jsReload() */
+#define LB_N_JS		LB_JS
+#define MAX_LB		6
 
 /* Search Result */
 #define SR_FOUND       0x1
@@ -224,7 +226,7 @@ void bzero(void *, int);
 
 #ifdef MAINPROGRAM
 int REV_LB[MAX_LB] = {
-    LB_N_FRAME, LB_FRAME, LB_N_INFO, LB_INFO, LB_N_SOURCE,
+    LB_N_FRAME, LB_FRAME, LB_N_INFO, LB_INFO, LB_N_SOURCE, LB_N_JS,
 };
 #else				/* not MAINPROGRAM */
 extern int REV_LB[];
@@ -277,12 +279,14 @@ extern int REV_LB[];
 #define SCONF_NO_REFERER_FROM	3
 #define SCONF_NO_REFERER_TO	4
 #define SCONF_USER_AGENT	5
-#define SCONF_N_FIELD		6
+#define SCONF_JS_RENDERER	6
+#define SCONF_N_FIELD		7
 #define query_SCONF_SUBSTITUTE_URL(pu) ((const char *)querySiteconf(pu, SCONF_SUBSTITUTE_URL))
 #define query_SCONF_USER_AGENT(pu) ((const char *)querySiteconf(pu, SCONF_USER_AGENT))
 #define query_SCONF_URL_CHARSET(pu) ((const wc_ces *)querySiteconf(pu, SCONF_URL_CHARSET))
 #define query_SCONF_NO_REFERER_FROM(pu) ((const int *)querySiteconf(pu, SCONF_NO_REFERER_FROM))
 #define query_SCONF_NO_REFERER_TO(pu) ((const int *)querySiteconf(pu, SCONF_NO_REFERER_TO))
+#define query_SCONF_JS_RENDERER(pu) ((const char *)querySiteconf(pu, SCONF_JS_RENDERER))
 
 /* 
  * Macros.
@@ -675,6 +679,9 @@ struct readbuffer {
 #define RB_DEL		0x100000
 #define RB_S		0x200000
 #define RB_HTML5	0x400000
+#ifdef USE_JS
+#define RB_NOSCRIPT	0x800000
+#endif				/* USE_JS */
 
 #define RB_GET_ALIGN(obuf) ((obuf)->flag&RB_ALIGN)
 #define RB_SET_ALIGN(obuf,align) do{(obuf)->flag &= ~RB_ALIGN; (obuf)->flag |= (align); }while(0)
@@ -843,6 +850,9 @@ global char AutoUncompress init(FALSE);
 global char PreserveTimestamp init(TRUE);
 global char ArgvIsURL init(TRUE);
 global char MetaRefresh init(FALSE);
+#ifdef USE_JS
+global char use_javascript init(TRUE);
+#endif				/* USE_JS */
 global char LocalhostOnly init(FALSE);
 global char* HostName init(NULL);
 
@@ -1022,6 +1032,7 @@ global char *ExtBrowser6 init(NULL);
 global char *ExtBrowser7 init(NULL);
 global char *ExtBrowser8 init(NULL);
 global char *ExtBrowser9 init(NULL);
+global char *JsRenderer init(NULL);
 global int BackgroundExtViewer init(TRUE);
 global int disable_secret_security_check init(FALSE);
 global char *passwd_file init(PASSWD_FILE);

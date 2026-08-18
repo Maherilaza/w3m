@@ -45,6 +45,7 @@ INFO		現在の文書に関する情報を表示します
 INTERRUPT	文書の読み込みを中断します
 ISEARCH		ファイルの末尾にむかってインクリメンタルサーチします
 ISEARCH_BACK	ファイルの先頭にむかってインクリメンタルサーチします
+JS_RELOAD	ページと外部 JavaScript レンダラによる描画結果を切り替えます
 LEFT		画面全体を1文字左にずらします
 LINE_BEGIN	行頭に移動します
 LINE_END	行末に移動します
@@ -115,6 +116,7 @@ REDRAW		再描画します
 REG_MARK	正規表現で指定された文字列を全てマークします
 REINIT		設定ファイルを再読込します。
 RELOAD		バッファを再度読み込みます
+RELOAD_JS	ページと外部 JavaScript レンダラによる描画結果を切り替えます
 RESHAPE		再レンダリングする
 RIGHT		画面全体を1文字右にずらします
 SAVE		文書のソースをファイルに保存します

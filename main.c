@@ -5220,6 +5220,78 @@ DEFUN(reload, RELOAD, "Load current document anew")
     displayBuffer(Currentbuf, B_FORCE_REDRAW);
 }
 
+/* toggle between the current page and its external JavaScript rendering */
+DEFUN(jsReload, JS_RELOAD RELOAD_JS,
+      "Toggle between the page and its external JavaScript rendering")
+{
+    Buffer *buf, *newbuf;
+    const char *renderer;
+    Str url, cmdline;
+
+    if ((buf = Currentbuf->linkBuffer[LB_JS]) != NULL) {
+	Currentbuf = buf;
+	displayBuffer(Currentbuf, B_NORMAL);
+	return;
+    }
+    if (Currentbuf->bufferprop & BP_INTERNAL) {
+	/* FIXME: gettextize? */
+	disp_err_message("Can't reload...", TRUE);
+	return;
+    }
+    if (Currentbuf->currentURL.scheme == SCM_LOCAL &&
+	!strcmp(Currentbuf->currentURL.file, "-")) {
+	/* file is std input */
+	/* FIXME: gettextize? */
+	disp_err_message("Can't reload stdin", TRUE);
+	return;
+    }
+    if (Currentbuf->frameset != NULL ||
+	(Currentbuf->bufferprop & BP_FRAME)) {
+	/* FIXME: gettextize? */
+	disp_err_message("Can't render a frame through the JavaScript"
+			 " renderer", TRUE);
+	return;
+    }
+    renderer = query_SCONF_JS_RENDERER(&Currentbuf->currentURL);
+    if (renderer == NULL || *renderer == '\0')
+	renderer = JsRenderer;
+    if (renderer == NULL || *renderer == '\0') {
+	/* FIXME: gettextize? */
+	disp_err_message("js_renderer is not configured; set the js_renderer"
+			 " option or a siteconf entry", TRUE);
+	return;
+    }
+    url = parsedURL2Str(&Currentbuf->currentURL);
+    cmdline = myExtCommand(Strnew_charp(renderer)->ptr,
+			   shell_quote(url->ptr), FALSE);
+    /* FIXME: gettextize? */
+    message("Rendering through external JavaScript renderer...", 0, 0);
+    refresh();
+
+    /* currentURL must be set before parsing so that relative links are
+     * resolved against the original URL */
+    newbuf = newBuffer(INIT_BUFFER_WIDTH);
+    copyParsedURL(&newbuf->currentURL, &Currentbuf->currentURL);
+    buf = loadHTMLcmdout(cmdline->ptr, newbuf);
+
+    if (buf == NULL || buf->firstLine == NULL) {
+	if (buf != NULL)
+	    discardBuffer(buf);
+	disp_err_message(Sprintf("JavaScript renderer failed: %s",
+				 conv_from_system(cmdline->ptr))->ptr, TRUE);
+	return;
+    }
+    buf->real_type = "text/html";
+    buf->real_scheme = Currentbuf->real_scheme;
+    buf->buffername = url->ptr;
+    buf->linkBuffer[LB_N_JS] = Currentbuf;
+    Currentbuf->linkBuffer[LB_JS] = buf;
+    buf->clone = Currentbuf->clone;
+    (*buf->clone)++;
+    pushBuffer(buf);
+    displayBuffer(Currentbuf, B_FORCE_REDRAW);
+}
+
 /* reshape */
 DEFUN(reshape, RESHAPE, "Re-render document")
 {

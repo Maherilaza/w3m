@@ -1,0 +1,45 @@
+@SET_MAKE@
+SHELL=@SHELL@
+srcdir=@srcdir@
+top_srcdir=@top_srcdir@
+VPATH=$(srcdir):.
+LIBRARY = libw3mjs.a
+CC=@CC@
+# Vendored quickjs-ng sources are compiled without $(OPTS)/-Wall:
+# CI passes -Werror via OPTS and the engine is not warning-clean.
+QJS_CFLAGS = -std=gnu11 -D_GNU_SOURCE -I$(srcdir) -I$(top_srcdir) @CPPFLAGS@ @DEFS@
+AR=ar
+RANLIB=@RANLIB@
+RM=rm
+
+SRCS = quickjs.c libregexp.c libunicode.c dtoa.c
+OBJS = quickjs.o libregexp.o libunicode.o dtoa.o
+
+all: $(LIBRARY)
+
+$(LIBRARY): $(OBJS)
+	$(AR) rv $(LIBRARY) $(OBJS)
+	$(RANLIB) $(LIBRARY)
+
+quickjs.o: $(srcdir)/quickjs.c $(srcdir)/quickjs.h $(srcdir)/quickjs-atom.h \
+	$(srcdir)/quickjs-opcode.h $(srcdir)/cutils.h $(srcdir)/list.h \
+	$(srcdir)/libregexp.h $(srcdir)/libunicode.h $(srcdir)/dtoa.h \
+	$(srcdir)/quickjs-c-atomics.h
+	$(CC) $(QJS_CFLAGS) -c -o $@ $(srcdir)/quickjs.c
+
+libregexp.o: $(srcdir)/libregexp.c $(srcdir)/libregexp.h \
+	$(srcdir)/libregexp-opcode.h $(srcdir)/cutils.h $(srcdir)/list.h
+	$(CC) $(QJS_CFLAGS) -c -o $@ $(srcdir)/libregexp.c
+
+libunicode.o: $(srcdir)/libunicode.c $(srcdir)/libunicode.h \
+	$(srcdir)/libunicode-table.h $(srcdir)/cutils.h
+	$(CC) $(QJS_CFLAGS) -c -o $@ $(srcdir)/libunicode.c
+
+dtoa.o: $(srcdir)/dtoa.c $(srcdir)/dtoa.h $(srcdir)/cutils.h
+	$(CC) $(QJS_CFLAGS) -c -o $@ $(srcdir)/dtoa.c
+
+clean:
+	@-$(RM) -f *.o $(LIBRARY)
+
+distclean: clean
+	@-$(RM) -f Makefile

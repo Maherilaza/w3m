@@ -69,6 +69,7 @@
 #undef USE_GOPHER
 #undef USE_ALARM
 #undef USE_IMAGE
+#undef USE_JS
 #undef USE_W3MIMG_X11
 #undef USE_W3MIMG_FB
 #undef USE_W3MIMG_WIN

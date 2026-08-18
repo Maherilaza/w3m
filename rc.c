@@ -158,6 +158,7 @@ static int OptionEncode = FALSE;
 #define CMT_EXTBRZ7      N_("7th external browser")
 #define CMT_EXTBRZ8      N_("8th external browser")
 #define CMT_EXTBRZ9      N_("9th external browser")
+#define CMT_JS_RENDERER  N_("External command to render JavaScript pages (%s is replaced with the URL)")
 #define CMT_DISABLE_SECRET_SECURITY_CHECK	N_("Disable secret file security check")
 #define CMT_PASSWDFILE	 N_("Password file")
 #define CMT_PRE_FORM_FILE	N_("File for setting form on loading")
@@ -227,6 +228,9 @@ static int OptionEncode = FALSE;
 #endif
 #define CMT_FOLLOW_REDIRECTION N_("Number of redirections to follow")
 #define CMT_META_REFRESH N_("Enable processing of meta-refresh tag")
+#ifdef USE_JS
+#define CMT_USE_JAVASCRIPT N_("Enable embedded JavaScript execution")
+#endif				/* USE_JS */
 #define CMT_LOCALHOST_ONLY N_("Restrict connections only to localhost")
 
 #ifdef USE_MIGEMO
@@ -617,6 +621,8 @@ struct param_ptr params6[] = {
      NULL},
     {"extbrowser9", P_STRING, PI_TEXT, (void *)&ExtBrowser9, CMT_EXTBRZ9,
      NULL},
+    {"js_renderer", P_STRING, PI_TEXT, (void *)&JsRenderer, CMT_JS_RENDERER,
+     NULL},
     {"bgextviewer", P_INT, PI_ONOFF, (void *)&BackgroundExtViewer,
      CMT_BGEXTVIEW, NULL},
     {"use_lessopen", P_INT, PI_ONOFF, (void *)&use_lessopen, CMT_USE_LESSOPEN,
@@ -707,6 +713,10 @@ struct param_ptr params9[] = {
      CMT_FOLLOW_REDIRECTION, NULL},
     {"meta_refresh", P_CHARINT, PI_ONOFF, (void *)&MetaRefresh,
      CMT_META_REFRESH, NULL},
+#ifdef USE_JS
+    {"use_javascript", P_CHARINT, PI_ONOFF, (void *)&use_javascript,
+     CMT_USE_JAVASCRIPT, NULL},
+#endif				/* USE_JS */
     {"localhost_only", P_CHARINT, PI_ONOFF, (void *)&LocalhostOnly,
      CMT_LOCALHOST_ONLY, NULL},
 #ifdef INET6
@@ -1720,6 +1730,7 @@ helpFile(char *base)
  * no_referer_from on|off
  * no_referer_to on|off
  * user_agent "<string>"
+ * js_renderer "<command>"
  * 
  * The last match wins.
  */
@@ -1733,6 +1744,7 @@ struct siteconf_rec {
 
     char *substitute_url;
     char *user_agent;
+    char *js_renderer;
 #ifdef USE_M17N
     wc_ces url_charset;
 #endif
@@ -1760,6 +1772,7 @@ newSiteconfRec(void)
 
     ent->substitute_url = NULL;
     ent->user_agent = NULL;
+    ent->js_renderer = NULL;
 #ifdef USE_M17N
     ent->url_charset = 0;
 #endif
@@ -1858,6 +1871,10 @@ loadSiteconf(void)
 	    ent->no_referer_to = str_to_bool(getWord(&p), 0);
 	    SCONF_SET(ent, SCONF_NO_REFERER_TO);
 	}
+	else if (strcmp(s, "js_renderer") == 0) {
+	    ent->js_renderer = getQWord(&p);
+	    SCONF_SET(ent, SCONF_JS_RENDERER);
+	}
     }
     if (ent) {
 	ent->next = siteconf_head;
@@ -1934,6 +1951,11 @@ url_found:
 	return &ent->no_referer_from;
     case SCONF_NO_REFERER_TO:
 	return &ent->no_referer_to;
+    case SCONF_JS_RENDERER:
+	if (ent->js_renderer && *ent->js_renderer) {
+	    return ent->js_renderer;
+	}
+	return NULL;
     }
     return NULL;
 }

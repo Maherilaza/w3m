@@ -1,0 +1,10 @@
+Vendored JavaScript engine: quickjs-ng
+
+Source: https://github.com/quickjs-ng/quickjs
+Release: v0.16.1
+License: MIT (see LICENSE in this directory)
+
+Only the core engine is vendored (quickjs.c, libregexp.c, libunicode.c,
+dtoa.c and their headers). quickjs-libc is deliberately NOT included:
+scripts executed by w3m run in a sandbox with no native I/O; the only
+host access goes through the shim in ../js.c.

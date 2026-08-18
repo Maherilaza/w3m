@@ -86,6 +86,7 @@ unsigned char ALST_IMG_ALT[] =
     ATTR_TITLE
 };
 unsigned char ALST_NOP[] = { ATTR_CORE };
+unsigned char ALST_SCRIPT[] = { ATTR_SRC, ATTR_TYPE, ATTR_CORE };
 
 TagInfo TagMAP[MAX_HTMLTAG] = {
     {NULL, NULL, 0, 0},						/*   0 HTML_UNKNOWN    */
@@ -146,7 +147,7 @@ TagInfo TagMAP[MAX_HTMLTAG] = {
     {"map", ALST_MAP, ARR_SZ(ALST_MAP), 0},			/*  55 HTML_MAP        */
     {"/map", NULL, 0, TFLG_END},				/*  56 HTML_N_MAP      */
     {"area", ALST_AREA, ARR_SZ(ALST_AREA), 0},			/*  57 HTML_AREA       */
-    {"script", ALST_NOP, ARR_SZ(ALST_NOP), 0},			/*  58 HTML_SCRIPT     */
+    {"script", ALST_SCRIPT, ARR_SZ(ALST_SCRIPT), 0},		/*  58 HTML_SCRIPT     */
     {"/script", NULL, 0, TFLG_END},				/*  59 HTML_N_SCRIPT   */
     {"base", ALST_BASE, ARR_SZ(ALST_BASE), 0},			/*  60 HTML_BASE       */
     {"del", ALST_NOP, ARR_SZ(ALST_NOP), 0},			/*  61 HTML_DEL        */

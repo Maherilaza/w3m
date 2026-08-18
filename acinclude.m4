@@ -82,6 +82,22 @@ AC_ARG_ENABLE(cookie,
 test x"$enable_cookie" = xyes && AC_DEFINE(USE_COOKIE)
 AC_MSG_RESULT($enable_cookie)])
 #
+# JavaScript (embedded QuickJS)
+#
+AC_DEFUN([AC_W3M_JS],
+[AC_SUBST(JSTARGET)
+JSTARGET=""
+AC_MSG_CHECKING(if JavaScript is enabled)
+AC_ARG_ENABLE(js,
+ [  --disable-js            disable embedded JavaScript (QuickJS)],,
+ [enable_js="yes"])
+if test x"$enable_js" = xyes; then
+  AC_DEFINE(USE_JS)
+  JSTARGET="js/libw3mjs.a"
+  W3M_LIBS="$W3M_LIBS -L./js -lw3mjs"
+fi
+AC_MSG_RESULT($enable_js)])
+#
 # ----------------------------------------------------------------
 # AC_W3M_DICT
 # ----------------------------------------------------------------

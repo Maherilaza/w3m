@@ -61,6 +61,9 @@ static wc_ces cur_document_charset = 0;
 
 static Str cur_title;
 static Str pre_title;
+#ifdef USE_JS
+static Str cur_script;
+#endif				/* USE_JS */
 static Str cur_select;
 static Str select_str;
 static int select_is_multiple;
@@ -3282,6 +3285,70 @@ feed_title(char *str)
     }
 }
 
+#ifdef USE_JS
+static void
+feed_script(char *str)
+{
+    if (!cur_script)
+	cur_script = Strnew();
+    Strcat_charp(cur_script, str);
+}
+
+static void
+js_flush_docwrite(struct html_feed_environ *h_env)
+{
+    char *s, *t;
+    int n = 0;
+
+    while (n++ < 100 && (s = js_take_docwrite()) != NULL)
+	HTMLlineproc1(s, h_env);
+    if ((t = js_take_title()) != NULL)
+	HTMLlineproc1(Sprintf("<title_alt title=\"%s\">",
+			      html_quote(t))->ptr, h_env);
+    if ((t = js_take_redirect()) != NULL)
+	pushEvent(FUNCNAME_gorURL, t);
+}
+
+static Str
+fetch_script_src(char *src)
+{
+    ParsedURL pu, *base;
+    URLFile f;
+    URLOption url_option;
+    HRequest hr;
+    unsigned char status = HTST_NORMAL;
+    Str body, line;
+
+    base = js_baseURL();
+    parseURL2(src, &pu, base);
+    if (pu.scheme != SCM_HTTP &&
+#ifdef USE_SSL
+	pu.scheme != SCM_HTTPS &&
+#endif				/* USE_SSL */
+	pu.scheme != SCM_LOCAL)
+	return NULL;
+    url_option.referer = NO_REFERER;
+    url_option.flag = 0;
+    f = openURL(src, &pu, base, &url_option, NULL, NULL, NULL, &hr,
+		&status);
+    if (f.stream == NULL)
+	return NULL;
+    if (pu.scheme != SCM_LOCAL) {
+	Buffer *t_buf = newBuffer(INIT_BUFFER_WIDTH);
+	readHeader(&f, t_buf, FALSE, &pu);
+	if (http_response_code >= 400) {
+	    UFclose(&f);
+	    return NULL;
+	}
+    }
+    body = Strnew();
+    while ((line = StrmyUFgets(&f)) && line->length)
+	Strcat(body, line);
+    UFclose(&f);
+    return body;
+}
+#endif				/* USE_JS */
+
 Str
 process_img(struct parsed_tag *tag, int width)
 {
@@ -4993,6 +5060,17 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_SCRIPT:
 	obuf->flag |= RB_SCRIPT;
 	obuf->end_tag = HTML_N_SCRIPT;
+#ifdef USE_JS
+	cur_script = NULL;
+	if (js_enabled()) {
+	    if (parsedtag_get_value(tag, ATTR_SRC, &p)) {
+		tmp = fetch_script_src(p);
+		if (tmp)
+		    js_eval_source(tmp);
+	    }
+	    js_flush_docwrite(h_env);
+	}
+#endif				/* USE_JS */
 	return 1;
     case HTML_STYLE:
 	obuf->flag |= RB_STYLE;
@@ -5001,10 +5079,33 @@ HTMLtagproc1(struct parsed_tag *tag, struct html_feed_environ *h_env)
     case HTML_N_SCRIPT:
 	obuf->flag &= ~RB_SCRIPT;
 	obuf->end_tag = 0;
+#ifdef USE_JS
+	if (js_enabled()) {
+	    if (cur_script)
+		js_eval_source(cur_script);
+	    cur_script = NULL;
+	    js_flush_docwrite(h_env);
+	}
+#endif				/* USE_JS */
 	return 1;
     case HTML_N_STYLE:
 	obuf->flag &= ~RB_STYLE;
 	obuf->end_tag = 0;
+	return 1;
+    case HTML_NOSCRIPT:
+#ifdef USE_JS
+	if (js_enabled()) {
+	    obuf->flag |= RB_NOSCRIPT;
+	    obuf->end_tag = HTML_N_NOSCRIPT;
+	}
+#endif				/* USE_JS */
+	return 1;
+    case HTML_N_NOSCRIPT:
+#ifdef USE_JS
+	obuf->flag &= ~RB_NOSCRIPT;
+	if (obuf->end_tag == HTML_N_NOSCRIPT)
+	    obuf->end_tag = 0;
+#endif				/* USE_JS */
 	return 1;
     case HTML_A:
 	if (obuf->anchor.url)
@@ -6492,7 +6593,11 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		if (str[1] && REALLY_THE_BEGINNING_OF_A_TAG(str))
 		    is_tag = TRUE;
 		else if (!(pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT |
-				       RB_SCRIPT | RB_STYLE | RB_TITLE))) {
+				       RB_SCRIPT | RB_STYLE | RB_TITLE
+#ifdef USE_JS
+				       | RB_NOSCRIPT
+#endif				/* USE_JS */
+				       ))) {
 		    line = Strnew_m_charp(str + 1, line, NULL)->ptr;
 		    str = "&lt;";
 		}
@@ -6510,7 +6615,11 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 	}
 
 	if (pre_mode & (RB_PLAIN | RB_INTXTA | RB_INSELECT | RB_SCRIPT |
-			RB_STYLE | RB_TITLE)) {
+			RB_STYLE | RB_TITLE
+#ifdef USE_JS
+			| RB_NOSCRIPT
+#endif			/* USE_JS */
+			)) {
 	    if (is_tag) {
 		p = str;
 		if ((tag = parse_tag(&p, internal))) {
@@ -6534,6 +6643,14 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		feed_select(str);
 		continue;
 	    }
+#ifdef USE_JS
+	    /* script */
+	    if ((pre_mode & RB_SCRIPT) && js_enabled() &&
+		obuf->table_level < 0) {
+		feed_script(str);
+		continue;
+	    }
+#endif				/* USE_JS */
 	    if (is_tag) {
 		if (strncmp(str, "<!--", 4) && (p = strchr(str + 1, '<'))) {
 		    str = Strnew_charp_n(str, p - str)->ptr;
@@ -6549,6 +6666,11 @@ HTMLlineproc0(char *line, struct html_feed_environ *h_env, int internal)
 		feed_textarea(str);
 		continue;
 	    }
+#ifdef USE_JS
+	    /* noscript (JavaScript enabled: content is suppressed) */
+	    if (pre_mode & RB_NOSCRIPT)
+		continue;
+#endif				/* USE_JS */
 	    /* script */
 	    if (pre_mode & RB_SCRIPT)
 		continue;
@@ -7161,6 +7283,12 @@ completeHTMLstream(struct html_feed_environ *h_env, struct readbuffer *obuf)
 	HTMLlineproc1("</select>", h_env);
     if (obuf->flag & RB_TITLE)
 	HTMLlineproc1("</title>", h_env);
+    if (obuf->flag & RB_SCRIPT)
+	HTMLlineproc1("</script>", h_env);
+#ifdef USE_JS
+    if (obuf->flag & RB_NOSCRIPT)
+	HTMLlineproc1("</noscript>", h_env);
+#endif				/* USE_JS */
 
     /* for unbalanced table tag */
     if (obuf->table_level >= MAX_TABLE)
@@ -7304,6 +7432,9 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
     forms_size = 0;
     forms = NULL;
     cur_hseq = 1;
+#ifdef USE_JS
+    cur_script = NULL;
+#endif				/* USE_JS */
 #ifdef USE_IMAGE
     cur_iseq = 1;
     if (newBuf->image_flag)
@@ -7338,8 +7469,14 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
     cur_baseURL = baseURL(newBuf);
 #endif
 
+#ifdef USE_JS
+    js_html_start(newBuf);
+#endif				/* USE_JS */
     if (SETJMP(AbortLoading) != 0) {
 	HTMLlineproc1("<br>Transfer Interrupted!<br>", &htmlenv1);
+#ifdef USE_JS
+	js_html_end();
+#endif				/* USE_JS */
 	goto phase2;
     }
     TRAP_ON;
@@ -7409,6 +7546,9 @@ loadHTMLstream(URLFile *f, Buffer *newBuf, FILE * src, int internal)
     obuf.status = R_ST_NORMAL;
     completeHTMLstream(&htmlenv1, &obuf);
     flushline(&htmlenv1, &obuf, 0, 2, htmlenv1.limit);
+#ifdef USE_JS
+    js_html_end();
+#endif				/* USE_JS */
 #if defined(USE_M17N) || defined(USE_IMAGE)
     cur_baseURL = NULL;
 #endif
@@ -7962,6 +8102,20 @@ getpipe(char *cmd)
 #ifdef USE_M17N
     buf->document_charset = WC_CES_US_ASCII;
 #endif
+    return buf;
+}
+
+/* 
+ * loadHTMLcmdout: execute shell command and load its HTML output
+ */
+Buffer *
+loadHTMLcmdout(char *cmd, Buffer *defaultbuf)
+{
+    Buffer *buf;
+
+    buf = loadcmdout(cmd, loadHTMLBuffer, defaultbuf);
+    if (buf != NULL)
+	buf->type = "text/html";
     return buf;
 }
 

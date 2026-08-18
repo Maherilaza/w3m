@@ -15,6 +15,7 @@ url_charset <charset>
 no_referer_from on|off
 no_referer_to on|off
 user_agent "string"
+js_renderer "<command>"
 
 The last match wins.
 
@@ -50,6 +51,16 @@ user_agent "Lynx/2.8.8dev.3 libwww-FM/2.14 SSL-MM/1.4.1"
 # rejection of a JavaScript disabled browser.)
 url m!^https?://([a-z]+\.)?twitter\.com/!
 user_agent "Googlebot/2.1"
+
+# Render pages of this site with an external JavaScript renderer (e.g. a
+# headless browser dumping the DOM). The command must print HTML to
+# standard output (redirect its stderr to keep the screen clean); %s is
+# replaced with the URL. Use it with the JS_RELOAD command (bind it in
+# ~/.w3m/keymap). This overrides the "js_renderer" option for matching
+# URLs. A "timeout" wrapper is recommended so w3m cannot get stuck on a
+# hung renderer.
+url m@^https?://www\.example\.com/@
+js_renderer "timeout 30 chromium --headless --disable-gpu --dump-dom %s 2>/dev/null"
 
 ===== Regular expressions notes =====
 

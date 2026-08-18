@@ -45,6 +45,7 @@ INFO		Zeige Informationen über dieses Dokument
 INTERRUPT	w3m zum Hintergrundprozess machen
 ISEARCH 	Inkrementelle Suche vorwärts
 ISEARCH_BACK	Inkrementelle Suche rückwärts
+JS_RELOAD	Zwischen Seite und externer JavaScript-Darstellung umschalten
 LEFT		Anzeigebereich um eine Spalte nach links verschieben
 LINE_BEGIN	Gehe zum Zeilenanfang
 LINE_END	Gehe zum Zeilenende
@@ -115,6 +116,7 @@ REDRAW		Bildschirmanzeige neu aufbauen
 REG_MARK	Zu einem Muster passenden Zeichenfolgen überall markieren
 REINIT		Konfigurationsdatei erneut laden
 RELOAD		Aktuelles Dokument erneut laden
+RELOAD_JS	Zwischen Seite und externer JavaScript-Darstellung umschalten
 RESHAPE 	Dokument nochmals verarbeiten
 RIGHT		Anzeigebereich um eine Spalte nach rechts verschieben
 SAVE		Dokument-Quellcode speichern

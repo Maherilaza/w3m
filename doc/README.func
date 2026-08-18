@@ -45,6 +45,7 @@ INFO		Display information about the current document
 INTERRUPT	Suspend w3m to background
 ISEARCH 	Incremental search forward
 ISEARCH_BACK	Incremental search backward
+JS_RELOAD	Toggle between the page and its external JavaScript rendering
 LEFT		Shift screen one column left
 LINE_BEGIN	Go to the beginning of the line
 LINE_END	Go to the end of the line
@@ -115,6 +116,7 @@ REDRAW		Draw the screen anew
 REG_MARK	Mark all occurences of a pattern
 REINIT		Reload configuration file
 RELOAD		Load current document anew
+RELOAD_JS	Toggle between the page and its external JavaScript rendering
 RESHAPE 	Re-render document
 RIGHT		Shift screen one column right
 SAVE		Save document source

@@ -15,6 +15,7 @@ url_charset <charset>
 no_referer_from on|off
 no_referer_to on|off
 user_agent "string"
+js_renderer "<command>"
 
 後ろの方に書かれたものが優先されます。
 
@@ -53,6 +54,17 @@ user_agent "Googlebot/2.1"
 
 Twitter に Googlebot であると告げます。(これによりJavaScriptが無効の
 ブラウザが拒否されずにページが返ります)
+
+url m@^https?://www\.example\.com/@
+js_renderer "timeout 30 chromium --headless --disable-gpu --dump-dom %s 2>/dev/null"
+
+このサイトのページを外部の JavaScript レンダラ (例: headless ブラウザによる
+DOM の出力) で描画します。コマンドは HTML を標準出力に書き出す必要があり
+(画面を汚さないよう stderr はリダイレクトしてください)、 %s は URL に
+置き換えられます。 JS_RELOAD コマンド (~/.w3m/keymap で
+キー割り当て可能) と組み合わせて使います。一致する URL では "js_renderer"
+オプションより優先されます。レンダラが応答しなくなった場合に備え、
+"timeout" で囲むことをお勧めします。
 
 ===== 正規表現について =====
 
