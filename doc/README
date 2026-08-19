@@ -1,4 +1,4 @@
-	w3m: WWW wo Miru Tool  version 0.5.3	Jan 15, 2011
+	w3m: WWW wo Miru Tool  version 0.5.3
 		(C) Copyright Akinori ITO
 			      Hironori SAKAMOTO
 			      Fumitoshi UKAI
@@ -10,45 +10,49 @@ used as a text-mode WWW browser.
 
      The features of w3m are as follows:
 
-* When reading HTML document, you can follow links and view images
-  (using external image viewer).
-* It has 'internet message mode', which determines the type of document
-  from header. If the Content-Type: field of the document is text/html,
-  that document is displayed as HTML document.
-* You can change URL description like 'http://hogege.net' in plain text
-  into link to that URL.
+* When reading an HTML document, you can follow links and view images
+  (using an external image viewer).
+* It has 'internet message mode', which determines the type of a
+  document from its headers. If the Content-Type: field of the document
+  is text/html, that document is displayed as an HTML document.
+* You can turn URL-like strings such as 'http://example.net' in plain
+  text into links to that URL.
+* Scripts embedded in pages are executed by an embedded QuickJS engine
+  (see "Recent changes" below).
 
-Current problems are:
+w3m runs on modern Unix systems: Linux, the BSDs, macOS, and (via
+Cygwin) Windows — see README.cygwin.
 
-* Online manuals are poor.
+2. Recent changes (this fork)
 
-w3m is known to work on these platforms.
+* JavaScript support: an embedded QuickJS engine executes page scripts
+  while loading, so pages that build their content with JavaScript now
+  render. Heavy single-page apps still need a real browser; see the
+  next item.
+* External JavaScript renderer: the JS_RELOAD command (bound to X) pipes
+  the current page through an external headless browser and swaps the
+  rendered result in. Configure it with the "js_renderer" siteconf
+  option or the shipped js-renderer helper script; see
+  README.siteconf.
+* Browser-style history: H moves to the previous page and L to the next
+  page without closing the current buffer.
+* Vim-like movement in the default keymap: b/e/w word motions, W/B/E
+  big-word motions, C-d/C-u half page, C-f/C-b full page, 0 to the
+  beginning of the line. The lynx keymap is unchanged.
 
-      SunOS 4.1.x
-      HP-UX 9.x, 10.x
-      Solaris 2.5.x, 2.6, 8, 9
-      Linux 2.0.*/2.2.*/2.4.*/2.6.*
-      FreeBSD 2.2.8, 3.1, 3.2, 4.6
-      NetBSD/macppc, m68k
-      EWS4800 Rel.12.2 Rev.A
-      Digital UNIX: v3.2D, v4.0D
-      IRIX 5.3, IRIX 6.5
-      OS/2 with emx
-      Windows 9x/NT with Cygwin b20.1, 1.1.x, 1.3.x
-      MS-DOS with DJGPP and WATT32 packet driver
-      MacOS X Server
-      MacOS X 10.1, 10.2, 10.3, 10.4
+3. Installation
 
-2. Installation
+Follow these instructions to install w3m.
 
-Follow these instructions to install w3m.  
+ - You need the Boehm GC library. On Debian/Ubuntu, install the build
+   dependencies:
 
- - You need latest version of GC library (at least 6.1?).
-   You can get GC library from https://www.hboehm.info/gc
+	# apt install build-essential libgc-dev libgpm-dev \
+		libssl-dev libimlib2-dev gettext
 
-   Note: if you're using GC library 6.1, you should install gc.h 
-   to PREFIX/include:
-	# cp gc-6.1/include/gc.h PREFIX/include
+   libssl-dev is required for https; without it configure silently
+   disables SSL and https:// URLs will fail. The other libraries are
+   optional (GPM mouse support, inline images, translations).
 
  - Run configure.
    % ./configure
@@ -59,39 +63,15 @@ Follow these instructions to install w3m.
  - do make install
    # make install
 
-MACHINE/OS specific notices:
+Windows: to compile w3m on MS-Windows, use Cygwin with the development
+tools. Read README.cygwin for details.
 
-HP-UX
-	If you want to use HP C compiler, answer
-
-		Input your favorite C-compiler.
-		(Default: cc) cc -Aa -D_HPUX_SOURCE
-
-	If you use just 'cc' without options, you can't compile w3m.
-	If you are using gcc, no option is needed. 
-
-OS/2
-	You can compile w3m using emx. First you have to do
-	is to compile GC library with
-
-		cd gc
-		make -f EMX_MAKEFILE
-
-	then compile w3m. I heard that OS/2 console can't 
-	display color, you had better compile w3m without
-	color capability.
-
-Windows
-	To compile w3m on MS-Windows, you have to use Cygwin with
-	development tools.
-	Read README.cygwin for more details.
-
-3. Copyright
+4. Copyright
 
   (C) Copyright 1994-2002 by Akinori Ito
   (C) Copyright 2002-2011 by Akinori Ito, Hironori Sakamoto, Fumitoshi Ukai
 
-4. License
+5. License
 
   Use, modification and redistribution of this software is hereby granted, 
   provided that this entire copyright notice is included on any copies of 
@@ -102,7 +82,7 @@ Windows
   limited to warranty of fitness of purpose, or merchantability, or
   results obtained from use of this software.
 
-5. Author
+6. Author
 
 Initial author:
 	Akinori Ito
