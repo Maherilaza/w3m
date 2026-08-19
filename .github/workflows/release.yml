@@ -1,0 +1,73 @@
+name: build-and-release
+
+on:
+  push:
+    branches:
+      - '*'
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install dependencies
+        run: |
+          sudo apt update
+          sudo apt install build-essential libgc-dev libgpm-dev libssl-dev libimlib2-dev
+
+      - name: configure
+        run: ./configure --enable-alarm --enable-ansi_color --enable-color --enable-cookie --enable-external_uri_loader --enable-gopher --enable-image --enable-ipv6 --enable-m17n --enable-menu --enable-mouse --enable-nls --enable-nntp --enable-sslverify --enable-unicode --enable-w3mmailer --with-imagelib=imlib2 --with-ssl --with-gc
+
+      - name: build
+        # TODO(rkta): Remove -Wno-error=deprecated-declarations once support for
+        # OpenSSL 3.0 has arrived.
+        run: make OPTS='-Werror -Wno-error=deprecated-declarations -Wno-unused-result'
+
+      - name: collect binaries
+        run: |
+          mkdir -p dist
+          cp w3m dist/
+          for f in w3mbookmark w3mhelperpanel w3mimgdisplay inflate; do
+            [ -x "$f" ] && cp "$f" dist/
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w3m-binaries
+          path: dist/*
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/releases'
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: w3m-binaries
+
+      - name: package
+        id: package
+        run: |
+          TAG="release-$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
+          tar czf "w3m-$TAG.tar.gz" *
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          gh release create "${{ steps.package.outputs.tag }}" \
+            "w3m-${{ steps.package.outputs.tag }}.tar.gz" \
+            --title "${{ steps.package.outputs.tag }}" \
+            --target "$GITHUB_SHA" \
+            --notes "Automated release built from commit ${GITHUB_SHA::7}."
