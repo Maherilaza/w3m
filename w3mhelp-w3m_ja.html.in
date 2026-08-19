@@ -87,6 +87,7 @@
  <TR> <TD>s</TD> <TD>バッファを選択</TD></TR>
  <TR> <TD>C-l</TD> <TD>画面の再描画</TD></TR>
  <TR> <TD>R</TD> <TD>バッファを再読み込み</TD></TR>
+ <TR> <TD>X</TD> <TD>外部JavaScriptレンダラでページを描画 (切替)</TD></TR>
  <TR> <TD>S</TD> <TD>バッファを保存</TD></TR>
  <TR> <TD>ESC s</TD> <TD>HTMLソースを保存</TD></TR>
  <TR> <TD>ESC e</TD> <TD>バッファの表示イメージを編集</TD></TR>

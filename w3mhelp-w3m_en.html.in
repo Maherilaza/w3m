@@ -85,6 +85,7 @@ w3m</A>
 <TR><TD>s<TD>Select buffer
 <TR><TD>C-l<TD>Redraw screen
 <TR><TD>R<TD>Reload buffer
+<TR><TD>X<TD>Render page with external JavaScript renderer (toggle)
 <TR><TD>S<TD>Save buffer
 <TR><TD>ESC s<TD>Save source
 <TR><TD>ESC e<TD>Edit buffer image

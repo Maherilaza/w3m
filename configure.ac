@@ -181,6 +181,7 @@ AC_OUTPUT([Makefile posubst po/Makefile.in \
 scripts/Makefile scripts/dirlist.cgi \
 scripts/w3mhelp.cgi \
 scripts/w3mmail.cgi scripts/xface2xpm \
+scripts/js-renderer \
 scripts/multipart/Makefile scripts/multipart/multipart.cgi \
 scripts/w3mman/Makefile scripts/w3mman/w3mman \
 scripts/w3mman/w3mman.1 scripts/w3mman/w3mman.de.1 \

@@ -74,6 +74,7 @@ keymap	T	NEW_TAB
 keymap	U	GOTO
 keymap	V	LOAD
 keymap	W	NEXT_BIGWORD
+keymap	X	JS_RELOAD
 keymap	Z	CENTER_H
 keymap	[	LINK_BEGIN
 keymap	]	LINK_END

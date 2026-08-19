@@ -56,15 +56,17 @@ Twitter に Googlebot であると告げます。(これによりJavaScriptが�
 ブラウザが拒否されずにページが返ります)
 
 url m@^https?://www\.example\.com/@
-js_renderer "timeout 30 chromium --headless --disable-gpu --dump-dom %s 2>/dev/null"
+js_renderer "js-renderer %s"
 
 このサイトのページを外部の JavaScript レンダラ (例: headless ブラウザによる
 DOM の出力) で描画します。コマンドは HTML を標準出力に書き出す必要があり
 (画面を汚さないよう stderr はリダイレクトしてください)、 %s は URL に
-置き換えられます。 JS_RELOAD コマンド (~/.w3m/keymap で
-キー割り当て可能) と組み合わせて使います。一致する URL では "js_renderer"
-オプションより優先されます。レンダラが応答しなくなった場合に備え、
-"timeout" で囲むことをお勧めします。
+置き換えられます。デフォルトで X キーに割り当てられている JS_RELOAD
+コマンドと組み合わせて使います。一致する URL では "js_renderer"
+オプションより優先されます。ブラウザのコマンドを直接使う場合は、
+レンダラが応答しなくなった場合に備え "timeout" で囲むことをお勧めします。
+w3m と一緒にインストールされる js-renderer ヘルパースクリプトは
+headless Chromium をラップし、タイムアウトも設定します。
 
 ===== 正規表現について =====
 

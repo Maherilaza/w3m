@@ -55,12 +55,14 @@ user_agent "Googlebot/2.1"
 # Render pages of this site with an external JavaScript renderer (e.g. a
 # headless browser dumping the DOM). The command must print HTML to
 # standard output (redirect its stderr to keep the screen clean); %s is
-# replaced with the URL. Use it with the JS_RELOAD command (bind it in
-# ~/.w3m/keymap). This overrides the "js_renderer" option for matching
-# URLs. A "timeout" wrapper is recommended so w3m cannot get stuck on a
-# hung renderer.
+# replaced with the URL. Invoke it with the JS_RELOAD command, bound to
+# "X" by default. This overrides the "js_renderer" option for matching
+# URLs. When using a raw browser command, a "timeout" wrapper is
+# recommended so w3m cannot get stuck on a hung renderer. The js-renderer
+# helper script installed with w3m wraps a headless Chromium for you and
+# applies its own timeout:
 url m@^https?://www\.example\.com/@
-js_renderer "timeout 30 chromium --headless --disable-gpu --dump-dom %s 2>/dev/null"
+js_renderer "js-renderer %s"
 
 ===== Regular expressions notes =====
 

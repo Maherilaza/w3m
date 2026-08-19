@@ -29,7 +29,7 @@ unsigned char GlobalKeymap[128] = {
     /*  P       Q       R       S       T       U       V       W        */
     nulcmd, quitfm, reload, svBuf, newT, goURL, ldfile, movWE,
     /*  X       Y       Z       [       \       ]       ^       _        */
-    nulcmd, nulcmd, ctrCsrH, topA, nulcmd, lastA, linbeg, nulcmd,
+    jsReload, nulcmd, ctrCsrH, topA, nulcmd, lastA, linbeg, nulcmd,
     /*  `       a       b       c       d       e       f       g        */
     nulcmd, svA, movLW, curURL, nulcmd, movEW, nulcmd, goLineF,
     /*  h       i       j       k       l       m       n       o        */

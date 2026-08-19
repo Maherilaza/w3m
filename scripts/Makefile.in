@@ -33,7 +33,7 @@ ETC_DIR = $(sysconfdir)
 CONF_DIR = $(sysconfdir)/$(PACKAGE)
 DOCDIRS = @DOCDIRS@
 
-AUXBIN_TARGETS	= xface2xpm
+AUXBIN_TARGETS	= xface2xpm js-renderer
 LIB_TARGETS	= dirlist.cgi w3mhelp.cgi w3mmail.cgi
 HELP_TARGETS	= w3mhelp-funcname.pl w3mhelp-funcdesc-stamp
 SUBDIRS = multipart w3mman
