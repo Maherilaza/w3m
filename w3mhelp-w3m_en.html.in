@@ -41,9 +41,9 @@ w3m</A>
 <TR><TD>g,M-&lt;<TD>Go to the first line
 <TR><TD>G,M-&gt;<TD>Go to the last line
 <TR><TD>ESC g<TD>Go to specified line
-<TR><TD>H<TD>Move cursor to the top line on the screen
+<TR><TD>H<TD>Go back to the previous page in history
 <TR><TD>M<TD>Move cursor to the middle line on the screen
-<TR><TD>L<TD>Move cursor to the bottom line on the screen
+<TR><TD>L<TD>Go forward to the next page in history
 <TR><TD>Z<TD>Move to the center line
 <TR><TD>z<TD>Move to the center column
 <TR><TD>TAB<TD>Move to next hyperlink

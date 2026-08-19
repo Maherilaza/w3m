@@ -43,9 +43,9 @@
  <TR> <TD>g,M-&lt;</TD> <TD>ページの先頭行に移動</TD></TR>
  <TR> <TD>G,M-&gt;</TD> <TD>ページの最終行に移動</TD></TR>
  <TR> <TD>ESC g</TD> <TD>指定行に移動</TD></TR>
- <TR> <TD>H</TD> <TD>カーソルを画面上端の行に移動</TD></TR>
+ <TR> <TD>H</TD> <TD>履歴の前のページに戻る</TD></TR>
  <TR> <TD>M</TD> <TD>カーソルを画面中央の行に移動</TD></TR>
- <TR> <TD>L</TD> <TD>カーソルを画面下端の行に移動</TD></TR>
+ <TR> <TD>L</TD> <TD>履歴の次のページに進む</TD></TR>
  <TR> <TD>Z</TD> <TD>カーソルのある位置を行の中央に移動</TD></TR>
  <TR> <TD>z</TD> <TD>カーソルのある行を画面の中央に移動</TD></TR>
  <TR> <TD>TAB</TD> <TD>次のハイパーリンクに移動</TD></TR>

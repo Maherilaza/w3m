@@ -60,11 +60,11 @@ keymap	D	DOWNLOAD_LIST
 keymap	E	END_BIGWORD
 keymap	F	FRAME
 keymap	G	END
-keymap	H	CURSOR_TOP
+keymap	H	PREV
 keymap	I	VIEW_IMAGE
 keymap	J	UP
 keymap	K	DOWN
-keymap	L	CURSOR_BOTTOM
+keymap	L	NEXT
 keymap	M	CURSOR_MIDDLE
 keymap	N	SEARCH_PREV
 keymap	Q	EXIT

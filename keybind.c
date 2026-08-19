@@ -25,7 +25,7 @@ unsigned char GlobalKeymap[128] = {
     /*  @       A       B       C       D       E       F       G        */
     readsh, nulcmd, movWB, nulcmd, ldDL, movEE, rFrame, goLineL,
     /*  H       I       J       K       L       M       N       O        */
-    cursorTop, followI, lup1, ldown1, cursorBottom, cursorMiddle, srchprv, nulcmd,
+    prevBf, followI, lup1, ldown1, nextBf, cursorMiddle, srchprv, nulcmd,
     /*  P       Q       R       S       T       U       V       W        */
     nulcmd, quitfm, reload, svBuf, newT, goURL, ldfile, movWE,
     /*  X       Y       Z       [       \       ]       ^       _        */
