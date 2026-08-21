@@ -17,6 +17,10 @@ the GitHub release notes by the release workflow.
 
 ## 2026.08.21 — release-2026.08.21-72fba52
 
+- Security fixes: out-of-bounds write from oversized colspan, bounded
+  internal symbol and form values, restricted script fetching with size
+  limits, hardened FTP PASV parsing, and cookie parsing fixes (expired
+  cookie pruning, entity overflow, quote over-read). (#1)
 - Publish per-platform binaries in releases. (#3)
 - CI compatibility matrix: verify builds on older toolchains and
   arm64. (#2)
