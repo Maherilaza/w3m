@@ -251,6 +251,8 @@ ftp_pasv(FTP ftp)
 	if (sscanf(++p, "%c%c%c%d%c", &d1, &d2, &d3, &port, &d4) != 5
 	    || d1 != d2 || d1 != d3 || d1 != d4)
 	    return -1;
+	if (port < 1 || port > 65535)
+	    return -1;
 	if (getnameinfo((struct sockaddr *)&sockaddr, sockaddrlen,
 			abuf, sizeof(abuf), NULL, 0, NI_NUMERICHOST) != 0)
 	    return -1;
@@ -264,8 +266,22 @@ ftp_pasv(FTP ftp)
 	for (p = tmp->ptr + 4; *p && !IS_DIGIT(*p); p++) ;
 	if (*p == '\0')
 	    return -1;
-	sscanf(p, "%d,%d,%d,%d,%d,%d", &n1, &n2, &n3, &n4, &p1, &p2);
-	tmp = Sprintf("%d.%d.%d.%d", n1, n2, n3, n4);
+	if (sscanf(p, "%d,%d,%d,%d,%d,%d", &n1, &n2, &n3, &n4, &p1, &p2) != 6
+	    || n1 < 0 || n1 > 255 || n2 < 0 || n2 > 255 ||
+	    n3 < 0 || n3 > 255 || n4 < 0 || n4 > 255 ||
+	    p1 < 0 || p1 > 255 || p2 < 0 || p2 > 255 ||
+	    p1 * 256 + p2 < 1)
+	    return -1;
+	{
+	    /* Ignore the address supplied by the server and connect to
+	     * the control connection peer instead (FTP bounce attack). */
+	    struct sockaddr_in sin;
+	    socklen_t sinlen = sizeof(sin);
+	    if (getpeername(fileno(ftp->wf), (struct sockaddr *)&sin,
+			    &sinlen) < 0)
+		return -1;
+	    tmp = Strnew_charp(inet_ntoa(sin.sin_addr));
+	}
 	data = openSocket(tmp->ptr, "", p1 * 256 + p2);
 	break;
     default:
@@ -346,6 +362,18 @@ void
 closeFTP(void)
 {
     ftp_close(&current_ftp);
+}
+
+/* truncate at CR/LF to prevent FTP command injection */
+static char *
+ftp_sanitize_path(char *p)
+{
+    char *q;
+    for (q = p; *q; q++) {
+	if (*q == '\r' || *q == '\n')
+	    return allocStr(p, (int)(q - p));
+    }
+    return p;
 }
 
 InputStream
@@ -453,7 +481,7 @@ openFTPStream(ParsedURL *pu, URLFile *uf)
 	pu->file[strlen(pu->file) - 1] == '/')
 	goto ftp_dir;
 
-    realpathname = file_unquote(pu->file);
+    realpathname = ftp_sanitize_path(file_unquote(pu->file));
     if (*realpathname == '/' && *(realpathname + 1) == '~')
 	realpathname++;
     /* Get file */
@@ -503,7 +531,7 @@ loadFTPDir0(ParsedURL *pu)
 	pu->file = "/";
     }
     else {
-	realpathname = file_unquote(pu->file);
+	realpathname = ftp_sanitize_path(file_unquote(pu->file));
 	if (*realpathname == '/' && *(realpathname + 1) == '~')
 	    realpathname++;
 	if (sv_type == UNIXLIKE_SERVER) {

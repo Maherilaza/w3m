@@ -1953,7 +1953,14 @@ openURL(char *url, ParsedURL *pu, ParsedURL *current,
 		return uf;
 	    if (pu->file == NULL)
 		pu->file = "1";
-	    tmp = Strnew_charp(file_unquote(pu->file));
+	    {
+		/* truncate at CR/LF to prevent request-line injection */
+		char *g = file_unquote(pu->file);
+		char *e = g;
+		while (*e && *e != '\r' && *e != '\n')
+		    e++;
+		tmp = Strnew_charp_n(g, (int)(e - g));
+	    }
 	    Strcat_char(tmp, '\n');
 	}
 	write(sock, tmp->ptr, tmp->length);
