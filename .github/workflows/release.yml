@@ -41,7 +41,6 @@ jobs:
         run: make OPTS='-Werror -Wno-error=deprecated-declarations -Wno-unused-result'
 
       - name: collect binaries
-        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p dist
           cp w3m dist/
@@ -50,14 +49,13 @@ jobs:
           done
 
       - uses: actions/upload-artifact@v4
-        if: matrix.os == 'ubuntu-latest'
         with:
-          name: w3m-binaries
+          name: w3m-binaries-${{ matrix.os }}
           path: dist/*
 
   build-bullseye:
-    # Guard-only leg: verifies the build on glibc 2.31 (< 2.34, separate
-    # libpthread) — hence LDFLAGS=-pthread. Not a release dependency.
+    # Builds on glibc 2.31 (< 2.34, separate libpthread) — hence
+    # LDFLAGS=-pthread. Produces the most portable x86_64 binaries.
     runs-on: ubuntu-latest
     container: debian:bullseye
 
@@ -78,21 +76,37 @@ jobs:
       - name: test
         run: cd tests && sh run_tests
 
+      - name: collect binaries
+        run: |
+          mkdir -p dist
+          cp w3m dist/
+          for f in w3mbookmark w3mhelperpanel w3mimgdisplay inflate; do
+            [ -x "$f" ] && cp "$f" dist/
+          done
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: w3m-binaries-debian-bullseye
+          path: dist/*
+
   release:
     runs-on: ubuntu-latest
-    needs: build
+    needs: [build, build-bullseye]
     if: github.event_name == 'push' && github.ref == 'refs/heads/releases'
 
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: w3m-binaries
+          pattern: w3m-binaries-*
 
       - name: package
         id: package
         run: |
           TAG="release-$(date -u +%Y.%m.%d)-${GITHUB_SHA::7}"
-          tar czf "w3m-$TAG.tar.gz" *
+          for d in w3m-binaries-*; do
+            label="${d#w3m-binaries-}"
+            tar czf "w3m-$TAG-$label.tar.gz" -C "$d" .
+          done
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: publish release
@@ -101,7 +115,7 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           gh release create "${{ steps.package.outputs.tag }}" \
-            "w3m-${{ steps.package.outputs.tag }}.tar.gz" \
+            w3m-${{ steps.package.outputs.tag }}-*.tar.gz \
             --title "${{ steps.package.outputs.tag }}" \
             --target "$GITHUB_SHA" \
             --notes "Automated release built from commit ${GITHUB_SHA::7}."
