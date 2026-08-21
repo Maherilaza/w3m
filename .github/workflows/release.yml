@@ -95,6 +95,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/releases'
 
     steps:
+      - uses: actions/checkout@v2
+
       - uses: actions/download-artifact@v4
         with:
           pattern: w3m-binaries-*
@@ -109,6 +111,16 @@ jobs:
           done
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
+      - name: extract release notes
+        run: |
+          awk '/^## / { if (capture && body != "") exit; capture = 1; next }
+               capture { if ($0 != "") body = body $0; print }' \
+            CHANGELOG.md > body.md
+          { echo "Automated release built from commit ${GITHUB_SHA::7}."
+            echo
+            cat body.md
+          } > notes.md
+
       - name: publish release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -118,4 +130,4 @@ jobs:
             w3m-${{ steps.package.outputs.tag }}-*.tar.gz \
             --title "${{ steps.package.outputs.tag }}" \
             --target "$GITHUB_SHA" \
-            --notes "Automated release built from commit ${GITHUB_SHA::7}."
+            --notes-file notes.md
