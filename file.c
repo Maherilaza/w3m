@@ -119,6 +119,7 @@ static struct link_stack *link_stack = NULL;
 #endif				/* USE_NNTP */
 
 #define INITIAL_FORM_SIZE 10
+#define MAX_FORM_ID 65535
 static FormList **forms;
 static int *form_stack;
 static int form_max = -1;
@@ -4296,6 +4297,9 @@ process_form_int(struct parsed_tag *tag, int fid)
 {
     char *p, *q, *r, *s, *tg, *n;
 
+    if (fid > MAX_FORM_ID)
+	return NULL;
+
     p = "get";
     parsedtag_get_value(tag, ATTR_METHOD, &p);
     q = "!CURRENT_URL!";
@@ -6331,9 +6335,13 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			buf->buffername = html_unquote(p);
 		    break;
 		case HTML_SYMBOL:
-		    effect |= PC_SYMBOL;
-		    if (parsedtag_get_value(tag, ATTR_TYPE, &p))
-			symbol = (char)atoi(p);
+		    if (parsedtag_get_value(tag, ATTR_TYPE, &p)) {
+			int sv = atoi(p);
+			if (sv >= 0 && sv < N_SYMBOL) {
+			    effect |= PC_SYMBOL;
+			    symbol = (char)sv;
+			}
+		    }
 		    break;
 		case HTML_N_SYMBOL:
 		    effect &= ~PC_SYMBOL;
