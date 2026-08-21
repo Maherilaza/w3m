@@ -13,7 +13,12 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    name: build (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-22.04, ubuntu-24.04-arm]
 
     steps:
       - uses: actions/checkout@v2
@@ -22,6 +27,10 @@ jobs:
         run: |
           sudo apt update
           sudo apt install build-essential libgc-dev libgpm-dev libssl-dev libimlib2-dev
+          if [ "${{ matrix.os }}" = "ubuntu-22.04" ]; then
+            sudo apt install gcc-10
+            echo "CC=gcc-10" >> "$GITHUB_ENV"
+          fi
 
       - name: configure
         run: ./configure --enable-alarm --enable-ansi_color --enable-color --enable-cookie --enable-external_uri_loader --enable-gopher --enable-image --enable-ipv6 --enable-m17n --enable-menu --enable-mouse --enable-nls --enable-nntp --enable-sslverify --enable-unicode --enable-w3mmailer --with-imagelib=imlib2 --with-ssl --with-gc
@@ -32,6 +41,7 @@ jobs:
         run: make OPTS='-Werror -Wno-error=deprecated-declarations -Wno-unused-result'
 
       - name: collect binaries
+        if: matrix.os == 'ubuntu-latest'
         run: |
           mkdir -p dist
           cp w3m dist/
@@ -40,9 +50,33 @@ jobs:
           done
 
       - uses: actions/upload-artifact@v4
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: w3m-binaries
           path: dist/*
+
+  build-bullseye:
+    # Guard-only leg: verifies the build on glibc 2.31 (< 2.34, separate
+    # libpthread) — hence LDFLAGS=-pthread. Not a release dependency.
+    runs-on: ubuntu-latest
+    container: debian:bullseye
+
+    steps:
+      - name: install dependencies
+        run: |
+          apt-get update
+          apt-get install -y git build-essential libgc-dev libgpm-dev libssl-dev libimlib2-dev gettext
+
+      - uses: actions/checkout@v2
+
+      - name: configure
+        run: ./configure --enable-alarm --enable-ansi_color --enable-color --enable-cookie --enable-external_uri_loader --enable-gopher --enable-image --enable-ipv6 --enable-m17n --enable-menu --enable-mouse --enable-nls --enable-nntp --enable-sslverify --enable-unicode --enable-w3mmailer --with-imagelib=imlib2 --with-ssl --with-gc LDFLAGS="-pthread"
+
+      - name: build
+        run: make OPTS='-Werror -Wno-error=deprecated-declarations -Wno-unused-result'
+
+      - name: test
+        run: cd tests && sh run_tests
 
   release:
     runs-on: ubuntu-latest
