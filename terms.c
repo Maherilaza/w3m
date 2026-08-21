@@ -391,6 +391,18 @@ char *ttyname(int);
 #define S_BCOLORED      0xf000
 #endif				/* USE_BG_COLOR */
 
+/* Truecolor (24-bit) slot ids, indexing rgb_slot[]; 0 means none */
+#define COL_FCOLOR2     0x000f0000u
+#ifdef USE_BG_COLOR
+#define COL_BCOLOR2     0x00f00000u
+#define M_BCOLOR        (COL_BCOLOR|COL_BCOLOR2)
+#else				/* not USE_BG_COLOR */
+#define COL_BCOLOR2     0
+#define M_BCOLOR        0
+#endif				/* not USE_BG_COLOR */
+#define M_FCOLOR        (COL_FCOLOR|COL_FCOLOR2)
+#define M_COLORS        (M_FCOLOR|M_BCOLOR)
+
 
 #define S_GRAPHICS      0x10
 
@@ -408,7 +420,7 @@ char *ttyname(int);
 #define ISUNUSED(d)     ((d) & L_UNUSED)
 #define NEED_CE(d)      ((d) & L_NEED_CE)
 
-typedef unsigned short l_prop;
+typedef unsigned int l_prop;
 
 typedef struct scline {
 #ifdef USE_M17N
@@ -1352,9 +1364,9 @@ move(int line, int column)
 }
 
 #ifdef USE_BG_COLOR
-#define M_SPACE (S_SCREENPROP|S_COLORED|S_BCOLORED|S_GRAPHICS)
+#define M_SPACE (S_SCREENPROP|S_COLORED|S_BCOLORED|COL_FCOLOR2|COL_BCOLOR2|S_GRAPHICS)
 #else				/* not USE_BG_COLOR */
-#define M_SPACE (S_SCREENPROP|S_COLORED|S_GRAPHICS)
+#define M_SPACE (S_SCREENPROP|S_COLORED|COL_FCOLOR2|S_GRAPHICS)
 #endif				/* not USE_BG_COLOR */
 
 static int
@@ -1666,10 +1678,70 @@ graph_ok(void)
     return T_as[0] != 0 && T_ae[0] != 0 && T_ac[0] != 0;
 }
 
+static int rgb_slot[16];	/* index 1..15 -> 24-bit RGB */
+static int n_rgb_slot = 0;
+
+static int
+truecolor_allowed(void)
+{
+    static int checked = 0, allowed = 1;
+    if (!checked) {
+	allowed = (getenv("W3M_NO_TRUECOLOR") == NULL);
+	checked = 1;
+    }
+    return allowed;
+}
+
+static int
+register_rgb_color(int rgb)
+{
+    int i;
+    for (i = 1; i <= n_rgb_slot; i++)
+	if (rgb_slot[i] == rgb)
+	    return i;
+    if (n_rgb_slot >= 15)
+	return 0;
+    rgb_slot[++n_rgb_slot] = rgb;
+    return n_rgb_slot;
+}
+
+static int
+nearest_ansi_color(int rgb)
+{
+    /* the 8 base ANSI colors, approximated as 0x00/0xaa per channel */
+    static const int ansi[8][3] = {
+	{0x00, 0x00, 0x00}, {0xaa, 0x00, 0x00}, {0x00, 0xaa, 0x00},
+	{0xaa, 0xaa, 0x00}, {0x00, 0x00, 0xaa}, {0xaa, 0x00, 0xaa},
+	{0x00, 0xaa, 0xaa}, {0xaa, 0xaa, 0xaa}
+    };
+    int i, best = 0, bestd = -1, d, dr, dg, db;
+    for (i = 0; i < 8; i++) {
+	dr = ((rgb >> 16) & 0xff) - ansi[i][0];
+	dg = ((rgb >> 8) & 0xff) - ansi[i][1];
+	db = (rgb & 0xff) - ansi[i][2];
+	d = dr * dr + dg * dg + db * db;
+	if (bestd < 0 || d < bestd) {
+	    bestd = d;
+	    best = i;
+	}
+    }
+    return best;
+}
+
 void
 setfcolor(int color)
 {
-    CurrentMode &= ~COL_FCOLOR;
+    int slot;
+
+    CurrentMode &= ~(COL_FCOLOR | COL_FCOLOR2);
+    if (COLOR_IS_RGB(color)) {
+	if (truecolor_allowed() &&
+	    (slot = register_rgb_color(COLOR_RGBVAL(color))) != 0) {
+	    CurrentMode |= ((l_prop)slot << 16);
+	    return;
+	}
+	color = nearest_ansi_color(COLOR_RGBVAL(color));
+    }
     if ((color & 0xf) <= 7)
 	CurrentMode |= (((color & 7) | 8) << 8);
 }
@@ -1682,11 +1754,31 @@ color_seq(int colmode)
     return seqbuf;
 }
 
+static char *
+fcolor2_seq(l_prop colmode)
+{
+    static char seqbuf[40];
+    int rgb = rgb_slot[(colmode & COL_FCOLOR2) >> 16];
+    sprintf(seqbuf, "\033[38;2;%d;%d;%dm",
+	    (rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
+    return seqbuf;
+}
+
 #ifdef USE_BG_COLOR
 void
 setbcolor(int color)
 {
-    CurrentMode &= ~COL_BCOLOR;
+    int slot;
+
+    CurrentMode &= ~(COL_BCOLOR | COL_BCOLOR2);
+    if (COLOR_IS_RGB(color)) {
+	if (truecolor_allowed() &&
+	    (slot = register_rgb_color(COLOR_RGBVAL(color))) != 0) {
+	    CurrentMode |= ((l_prop)slot << 20);
+	    return;
+	}
+	color = nearest_ansi_color(COLOR_RGBVAL(color));
+    }
     if ((color & 0xf) <= 7)
 	CurrentMode |= (((color & 7) | 8) << 12);
 }
@@ -1698,15 +1790,25 @@ bcolor_seq(int colmode)
     sprintf(seqbuf, "\033[%dm", ((colmode >> 12) & 7) + 40);
     return seqbuf;
 }
+
+static char *
+bcolor2_seq(l_prop colmode)
+{
+    static char seqbuf[40];
+    int rgb = rgb_slot[(colmode & COL_BCOLOR2) >> 20];
+    sprintf(seqbuf, "\033[48;2;%d;%d;%dm",
+	    (rgb >> 16) & 0xff, (rgb >> 8) & 0xff, rgb & 0xff);
+    return seqbuf;
+}
 #endif				/* USE_BG_COLOR */
 
 #define RF_NEED_TO_MOVE    0
 #define RF_CR_OK           1
 #define RF_NONEED_TO_MOVE  2
 #ifdef USE_BG_COLOR
-#define M_MEND (S_STANDOUT|S_UNDERLINE|S_BOLD|S_COLORED|S_BCOLORED|S_GRAPHICS)
+#define M_MEND (S_STANDOUT|S_UNDERLINE|S_BOLD|S_COLORED|S_BCOLORED|COL_FCOLOR2|COL_BCOLOR2|S_GRAPHICS)
 #else				/* not USE_BG_COLOR */
-#define M_MEND (S_STANDOUT|S_UNDERLINE|S_BOLD|S_COLORED|S_GRAPHICS)
+#define M_MEND (S_STANDOUT|S_UNDERLINE|S_BOLD|S_COLORED|COL_FCOLOR2|S_GRAPHICS)
 #endif				/* not USE_BG_COLOR */
 void
 refresh(void)
@@ -1805,16 +1907,12 @@ refresh(void)
 		if ((!(pr[col] & S_STANDOUT) && (mode & S_STANDOUT)) ||
 		    (!(pr[col] & S_UNDERLINE) && (mode & S_UNDERLINE)) ||
 		    (!(pr[col] & S_BOLD) && (mode & S_BOLD)) ||
-		    (!(pr[col] & S_COLORED) && (mode & S_COLORED))
+		    (!(pr[col] & M_FCOLOR) && (mode & M_FCOLOR))
 #ifdef USE_BG_COLOR
-		    || (!(pr[col] & S_BCOLORED) && (mode & S_BCOLORED))
+		    || (!(pr[col] & M_BCOLOR) && (mode & M_BCOLOR))
 #endif				/* USE_BG_COLOR */
 		    || (!(pr[col] & S_GRAPHICS) && (mode & S_GRAPHICS))) {
-		    if ((mode & S_COLORED)
-#ifdef USE_BG_COLOR
-			|| (mode & S_BCOLORED)
-#endif				/* USE_BG_COLOR */
-			)
+		    if ((mode & M_COLORS))
 			writestr(T_op);
 		    if (mode & S_GRAPHICS)
 			writestr(T_ae);
@@ -1841,17 +1939,19 @@ refresh(void)
 			writestr(T_md);
 			mode |= S_BOLD;
 		    }
-		    if ((pr[col] & S_COLORED) && (pr[col] ^ mode) & COL_FCOLOR) {
-			color = (pr[col] & COL_FCOLOR);
-			mode = ((mode & ~COL_FCOLOR) | color);
-			writestr(color_seq(color));
+		    if ((pr[col] & M_FCOLOR) && (pr[col] ^ mode) & M_FCOLOR) {
+			color = (pr[col] & M_FCOLOR);
+			mode = ((mode & ~M_FCOLOR) | color);
+			writestr((color & COL_FCOLOR2) ? fcolor2_seq(color) :
+				 color_seq((int)color));
 		    }
 #ifdef USE_BG_COLOR
-		    if ((pr[col] & S_BCOLORED)
-			&& (pr[col] ^ mode) & COL_BCOLOR) {
-			bcolor = (pr[col] & COL_BCOLOR);
-			mode = ((mode & ~COL_BCOLOR) | bcolor);
-			writestr(bcolor_seq(bcolor));
+		    if ((pr[col] & M_BCOLOR)
+			&& (pr[col] ^ mode) & M_BCOLOR) {
+			bcolor = (pr[col] & M_BCOLOR);
+			mode = ((mode & ~M_BCOLOR) | bcolor);
+			writestr((bcolor & COL_BCOLOR2) ? bcolor2_seq(bcolor) :
+				 bcolor_seq((int)bcolor));
 		    }
 #endif				/* USE_BG_COLOR */
 		    if ((pr[col] & S_GRAPHICS) && !(mode & S_GRAPHICS)) {
@@ -1884,11 +1984,7 @@ refresh(void)
 	}
 	*dirty &= ~(L_NEED_CE | L_CLRTOEOL);
 	if (mode & M_MEND) {
-	    if (mode & (S_COLORED
-#ifdef USE_BG_COLOR
-			| S_BCOLORED
-#endif				/* USE_BG_COLOR */
-		))
+	    if (mode & M_COLORS)
 		writestr(T_op);
 	    if (mode & S_GRAPHICS) {
 		writestr(T_ae);
@@ -2064,14 +2160,14 @@ clrtoeol_with_bcolor(void)
     int i, cli, cco;
     l_prop pr;
 
-    if (!(CurrentMode & S_BCOLORED)) {
+    if (!(CurrentMode & (S_BCOLORED | COL_BCOLOR2))) {
 	clrtoeol();
 	return;
     }
     cli = CurLine;
     cco = CurColumn;
     pr = CurrentMode;
-    CurrentMode = (CurrentMode & (M_CEOL | S_BCOLORED)) | C_ASCII;
+    CurrentMode = (CurrentMode & (M_CEOL | S_BCOLORED | COL_BCOLOR2)) | C_ASCII;
     for (i = CurColumn; i < COLS; i++)
 	addch(' ');
     move(cli, cco);

@@ -1018,6 +1018,19 @@ str_to_color(char *value)
 {
     if (value == NULL)
 	return 8;		/* terminal */
+    if (value[0] == '#') {	/* #RRGGBB truecolor */
+	int i;
+	long rgb;
+	for (i = 1; i <= 6; i++) {
+	    if (value[i] == '\0' || !IS_XDIGIT((int)value[i]))
+		return 8;	/* invalid: terminal */
+	}
+	if (value[7] != '\0')
+	    return 8;		/* invalid: terminal */
+	rgb = strtol(value + 1, NULL, 16);
+	return COLOR_FROM_RGB((rgb >> 16) & 0xff,
+			      (rgb >> 8) & 0xff, rgb & 0xff);
+    }
     switch (TOLOWER(*value)) {
     case '0':
 	return 0;		/* black */
@@ -1484,15 +1497,21 @@ to_str(struct param_ptr *p)
 {
     switch (p->type) {
     case P_INT:
-#ifdef USE_COLOR
-    case P_COLOR:
-#endif
 #ifdef USE_M17N
     case P_CODE:
 	return Sprintf("%d", (int)(*(wc_ces *) p->varptr));
 #endif
     case P_NZINT:
 	return Sprintf("%d", *(int *)p->varptr);
+#ifdef USE_COLOR
+    case P_COLOR:
+	{
+	    int c = *(int *)p->varptr;
+	    if (COLOR_IS_RGB(c))
+		return Sprintf("#%06X", COLOR_RGBVAL(c));
+	    return Sprintf("%d", c);
+	}
+#endif
     case P_SHORT:
 	return Sprintf("%d", *(short *)p->varptr);
     case P_CHARINT:
@@ -1595,6 +1614,14 @@ load_option_panel(void)
 		break;
 	    case PI_SEL_C:
 		tmp = to_str(p);
+#ifdef USE_COLOR
+		if (p->type == P_COLOR && COLOR_IS_RGB(*(int *)p->varptr)) {
+		    Strcat_m_charp(src, "<input type=text name=",
+				   p->name, " value=\"",
+				   html_quote(tmp->ptr), "\">", NULL);
+		    break;
+		}
+#endif
 		Strcat_m_charp(src, "<select name=", p->name, ">", NULL);
 		for (s = (struct sel_c *)p->select; s->text != NULL; s++) {
 		    Strcat_charp(src, "<option value=");

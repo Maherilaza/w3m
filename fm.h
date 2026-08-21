@@ -966,6 +966,13 @@ global Str header_string init(NULL);
 global int override_content_type init(FALSE);
 global int override_user_agent init(FALSE);
 
+/* Color values 0-7 are ANSI colors, 8 is "terminal default".
+ * COLOR_RGB_FLAG marks a 24-bit #RRGGBB truecolor value. */
+#define COLOR_RGB_FLAG   0x1000000
+#define COLOR_IS_RGB(c)  (((c) & COLOR_RGB_FLAG) != 0)
+#define COLOR_RGBVAL(c)  ((c) & 0xffffff)
+#define COLOR_FROM_RGB(r,g,b) (COLOR_RGB_FLAG | (((r)&0xff)<<16) | (((g)&0xff)<<8) | ((b)&0xff))
+
 #ifdef USE_COLOR
 global int useColor init(TRUE);
 global int highIntensityColors init(FALSE);
