@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include "indep.h"
 #include "Str.h"
+#include "ucs.h"
 #include <gc.h>
 #include "myctype.h"
 #include "entity.h"
@@ -437,8 +438,11 @@ getescapechar(char **str)
 		*str = p;
 		return -1;
 	    }
-	    for (dummy = GET_MYCDIGIT(*p), p++; IS_XDIGIT(*p); p++)
-		dummy = dummy * 0x10 + GET_MYCDIGIT(*p);
+	    for (dummy = GET_MYCDIGIT(*p), p++; IS_XDIGIT(*p); p++) {
+		int d = GET_MYCDIGIT(*p);
+		dummy = (dummy > (WC_C_UCS4_END - d) / 0x10)
+		    ? WC_C_UCS4_END : dummy * 0x10 + d;
+	    }
 	    if (*p == ';')
 		p++;
 	    *str = p;
@@ -449,8 +453,11 @@ getescapechar(char **str)
 		*str = p;
 		return -1;
 	    }
-	    for (dummy = GET_MYCDIGIT(*p), p++; IS_DIGIT(*p); p++)
-		dummy = dummy * 10 + GET_MYCDIGIT(*p);
+	    for (dummy = GET_MYCDIGIT(*p), p++; IS_DIGIT(*p); p++) {
+		int d = GET_MYCDIGIT(*p);
+		dummy = (dummy > (WC_C_UCS4_END - d) / 10)
+		    ? WC_C_UCS4_END : dummy * 10 + d;
+	    }
 	    if (*p == ';')
 		p++;
 	    *str = p;

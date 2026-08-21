@@ -142,7 +142,8 @@ check_expired_cookies(void)
     if (!First_cookie)
 	return;
 
-    if (First_cookie->expires != (time_t) - 1 && First_cookie->expires < now) {
+    while (First_cookie && First_cookie->expires != (time_t) - 1 &&
+	   First_cookie->expires < now) {
 	if (!(First_cookie->flag & COO_DISCARD))
 	    is_saved = 0;
 	First_cookie = First_cookie->next;

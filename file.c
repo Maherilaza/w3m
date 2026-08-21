@@ -1103,8 +1103,11 @@ qstr_unquote(Str s)
     if (*p == '"') {
 	Str tmp = Strnew();
 	for (p++; *p != '\0'; p++) {
-	    if (*p == '\\')
+	    if (*p == '\\') {
 		p++;
+		if (*p == '\0')
+		    break;
+	    }
 	    Strcat_char(tmp, *p);
 	}
 	if (Strlastchar(tmp) == '"')
