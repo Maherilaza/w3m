@@ -9,7 +9,8 @@
 # Press X (JS_RELOAD) on the page to swap in the rendered version.
 # Requires a Chromium-based browser: either one installed by Playwright
 # (npx playwright install chromium) or chromium/google-chrome in PATH.
-# --no-sandbox is needed when running as root or in containers;
+# The browser runs sandboxed; set W3M_JS_RENDERER_NO_SANDBOX=1 to pass
+# --no-sandbox (needed when running as root or in containers).
 # --virtual-time-budget lets single-page apps finish client-side
 # rendering before the DOM is dumped.
 
@@ -26,5 +27,7 @@ if [ -z "$BIN" ]; then
     echo "js-renderer: no Chromium-based browser found" >&2
     exit 1
 fi
-exec timeout 60 "$BIN" --headless --no-sandbox --disable-gpu \
+NO_SANDBOX=
+[ -n "$W3M_JS_RENDERER_NO_SANDBOX" ] && NO_SANDBOX=--no-sandbox
+exec timeout 60 "$BIN" --headless $NO_SANDBOX --disable-gpu \
     --virtual-time-budget=15000 --dump-dom "$1" 2>/dev/null

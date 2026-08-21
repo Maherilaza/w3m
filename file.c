@@ -3287,12 +3287,15 @@ feed_title(char *str)
 }
 
 #ifdef USE_JS
+#define JS_SCRIPT_LIMIT (1024 * 1024)
+
 static void
 feed_script(char *str)
 {
     if (!cur_script)
 	cur_script = Strnew();
-    Strcat_charp(cur_script, str);
+    if (cur_script->length + (int)strlen(str) <= JS_SCRIPT_LIMIT)
+	Strcat_charp(cur_script, str);
 }
 
 static void
@@ -3328,6 +3331,10 @@ fetch_script_src(char *src)
 #endif				/* USE_SSL */
 	pu.scheme != SCM_LOCAL)
 	return NULL;
+    /* local files may only be fetched as scripts by local pages */
+    if (pu.scheme == SCM_LOCAL &&
+	(base == NULL || base->scheme != SCM_LOCAL))
+	return NULL;
     url_option.referer = NO_REFERER;
     url_option.flag = 0;
     f = openURL(src, &pu, base, &url_option, NULL, NULL, NULL, &hr,
@@ -3343,8 +3350,13 @@ fetch_script_src(char *src)
 	}
     }
     body = Strnew();
-    while ((line = StrmyUFgets(&f)) && line->length)
+    while ((line = StrmyUFgets(&f)) && line->length) {
+	if (body->length + line->length > JS_SCRIPT_LIMIT) {
+	    UFclose(&f);
+	    return NULL;
+	}
 	Strcat(body, line);
+    }
     UFclose(&f);
     return body;
 }
