@@ -65,7 +65,7 @@ jobs:
       - name: install dependencies
         run: |
           apt-get update
-          apt-get install -y git build-essential libgc-dev libgpm-dev libssl-dev libimlib2-dev gettext
+          apt-get install -y git build-essential libncurses-dev libgc-dev libgpm-dev libssl-dev libimlib2-dev gettext
 
       - uses: actions/checkout@v2
 
