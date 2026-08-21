@@ -5256,6 +5256,12 @@ DEFUN(jsReload, JS_RELOAD RELOAD_JS,
     if (renderer == NULL || *renderer == '\0')
 	renderer = JsRenderer;
     if (renderer == NULL || *renderer == '\0') {
+	/* fall back to the bundled helper */
+	char *helper = Sprintf("%s/js-renderer", w3m_auxbin_dir())->ptr;
+	if (access(helper, X_OK) == 0)
+	    renderer = Sprintf("%s %%s", helper)->ptr;
+    }
+    if (renderer == NULL || *renderer == '\0') {
 	/* FIXME: gettextize? */
 	disp_err_message("js_renderer is not configured; set the js_renderer"
 			 " option or a siteconf entry", TRUE);
