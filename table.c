@@ -2683,7 +2683,7 @@ feed_table_tag(struct table *tbl, char *line, struct table_mode *mode,
 	if (rowspan < 1)
 	    rowspan = 1;
 	if (parsedtag_get_value(tag, ATTR_COLSPAN, &colspan)) {
-	    if ((tbl->col + colspan) >= MAXCOL) {
+	    if (colspan > 0 && colspan > MAXCOL - tbl->col) {
 		/* Can't expand column */
 		colspan = MAXCOL - tbl->col;
 	    }

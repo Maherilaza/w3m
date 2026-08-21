@@ -119,6 +119,7 @@ static struct link_stack *link_stack = NULL;
 #endif				/* USE_NNTP */
 
 #define INITIAL_FORM_SIZE 10
+#define MAX_FORM_ID 65535
 static FormList **forms;
 static int *form_stack;
 static int form_max = -1;
@@ -1102,8 +1103,11 @@ qstr_unquote(Str s)
     if (*p == '"') {
 	Str tmp = Strnew();
 	for (p++; *p != '\0'; p++) {
-	    if (*p == '\\')
+	    if (*p == '\\') {
 		p++;
+		if (*p == '\0')
+		    break;
+	    }
 	    Strcat_char(tmp, *p);
 	}
 	if (Strlastchar(tmp) == '"')
@@ -3286,12 +3290,15 @@ feed_title(char *str)
 }
 
 #ifdef USE_JS
+#define JS_SCRIPT_LIMIT (1024 * 1024)
+
 static void
 feed_script(char *str)
 {
     if (!cur_script)
 	cur_script = Strnew();
-    Strcat_charp(cur_script, str);
+    if (cur_script->length + (int)strlen(str) <= JS_SCRIPT_LIMIT)
+	Strcat_charp(cur_script, str);
 }
 
 static void
@@ -3327,6 +3334,10 @@ fetch_script_src(char *src)
 #endif				/* USE_SSL */
 	pu.scheme != SCM_LOCAL)
 	return NULL;
+    /* local files may only be fetched as scripts by local pages */
+    if (pu.scheme == SCM_LOCAL &&
+	(base == NULL || base->scheme != SCM_LOCAL))
+	return NULL;
     url_option.referer = NO_REFERER;
     url_option.flag = 0;
     f = openURL(src, &pu, base, &url_option, NULL, NULL, NULL, &hr,
@@ -3342,8 +3353,13 @@ fetch_script_src(char *src)
 	}
     }
     body = Strnew();
-    while ((line = StrmyUFgets(&f)) && line->length)
+    while ((line = StrmyUFgets(&f)) && line->length) {
+	if (body->length + line->length > JS_SCRIPT_LIMIT) {
+	    UFclose(&f);
+	    return NULL;
+	}
 	Strcat(body, line);
+    }
     UFclose(&f);
     return body;
 }
@@ -4295,6 +4311,9 @@ static Str
 process_form_int(struct parsed_tag *tag, int fid)
 {
     char *p, *q, *r, *s, *tg, *n;
+
+    if (fid > MAX_FORM_ID)
+	return NULL;
 
     p = "get";
     parsedtag_get_value(tag, ATTR_METHOD, &p);
@@ -6331,9 +6350,13 @@ HTMLlineproc2body(Buffer *buf, Str (*feed) (), int llimit)
 			buf->buffername = html_unquote(p);
 		    break;
 		case HTML_SYMBOL:
-		    effect |= PC_SYMBOL;
-		    if (parsedtag_get_value(tag, ATTR_TYPE, &p))
-			symbol = (char)atoi(p);
+		    if (parsedtag_get_value(tag, ATTR_TYPE, &p)) {
+			int sv = atoi(p);
+			if (sv >= 0 && sv < N_SYMBOL) {
+			    effect |= PC_SYMBOL;
+			    symbol = (char)sv;
+			}
+		    }
 		    break;
 		case HTML_N_SYMBOL:
 		    effect &= ~PC_SYMBOL;

@@ -37,6 +37,33 @@ total_dot_number(char *p, char *ep, unsigned int max_count)
 }
 
 
+/* unanchored equivalent of "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+" */
+static int
+is_ip_fragment(char *p)
+{
+    int i;
+    for (i = 0; i < 3; i++) {
+	if (!IS_DIGIT(*p))
+	    return 0;
+	while (IS_DIGIT(*p))
+	    p++;
+	if (*p != '.')
+	    return 0;
+	p++;
+    }
+    return IS_DIGIT(*p);
+}
+
+static int
+contains_ip_fragment(char *s)
+{
+    for (; *s; s++) {
+	if (is_ip_fragment(s))
+	    return 1;
+    }
+    return 0;
+}
+
 static char *
 domain_match(char *host, char *domain)
 {
@@ -45,9 +72,8 @@ domain_match(char *host, char *domain)
     /* [RFC 2109] s. 2, "domain-match", case 1
      * (both are IP and identical)
      */
-    regexCompile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+", 0);
-    m0 = regexMatch(host, -1, 1);
-    m1 = regexMatch(domain, -1, 1);
+    m0 = contains_ip_fragment(host);
+    m1 = contains_ip_fragment(domain);
     if (m0 && m1) {
 	if (strcasecmp(host, domain) == 0)
 	    return host;
@@ -142,7 +168,8 @@ check_expired_cookies(void)
     if (!First_cookie)
 	return;
 
-    if (First_cookie->expires != (time_t) - 1 && First_cookie->expires < now) {
+    while (First_cookie && First_cookie->expires != (time_t) - 1 &&
+	   First_cookie->expires < now) {
 	if (!(First_cookie->flag & COO_DISCARD))
 	    is_saved = 0;
 	First_cookie = First_cookie->next;

@@ -263,7 +263,11 @@ js_take_title(void)
     if (js_ctx == NULL)
 	return NULL;
     v = JS_GetPropertyStr(js_ctx, js_doc_obj, "title");
-    if (JS_IsString(v)) {
+    if (JS_IsException(v)) {
+	JSValue exc = JS_GetException(js_ctx);
+	JS_FreeValue(js_ctx, exc);
+    }
+    else if (JS_IsString(v)) {
 	s = JS_ToCString(js_ctx, v);
 	if (s && *s && (js_title == NULL || strcmp(js_title, s) != 0))
 	    js_title = Strnew_charp(s)->ptr;
